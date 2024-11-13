@@ -1,0 +1,86 @@
+{
+  "name": "hono-openapi-middlewares",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest"
+  },
+  "version": "1.0.0",
+  "main": "dist/hono-openapi-middlewares.cjs",
+  "module": "dist/hono-openapi-middlewares.mjs",
+  "types": "dist/hono-openapi-middlewares.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/hono-openapi-middlewares.cjs",
+      "import": "./dist/hono-openapi-middlewares.mjs",
+      "types": "./dist/hono-openapi-middlewares.d.ts"
+    }
+  },
+  "description": "",
+  "scripts": {
+    "dev": "vite",
+    "test": "vitest",
+    "build": "rimraf build/**/* && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts && copyfiles ./package.json build && copyfiles ./README.md build",
+    "type-check": "tsc",
+    "semantic-release": "semantic-release",
+    "lint": "eslint src",
+    "format": "prettier . --write",
+    "format:ci-cd": "prettier --check '**/*.{ts,css,json,md}'",
+    "prepare": "husky"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      [
+        "@semantic-release/npm",
+        {
+          "npmPublish": true,
+          "tarballDir": "dist",
+          "pkgRoot": "build"
+        }
+      ],
+      "@semantic-release/github",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "CHANGELOG.md",
+            "package.json"
+          ],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ]
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "@commitlint/prompt-cli": "^19.5.0",
+    "@semantic-release/git": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.14.0",
+    "@typescript-eslint/parser": "^8.14.0",
+    "copyfiles": "^2.4.1",
+    "dts-bundle-generator": "^9.5.1",
+    "eslint": "^9.14.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-typescript": "^3.0.0",
+    "husky": "^9.1.6",
+    "prettier": "^3.3.3",
+    "semantic-release": "^24.2.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  },
+  "dependencies": {
+    "@hono/zod-openapi": "^0.17.0",
+    "hono": "^4.6.10"
+  }
+}
