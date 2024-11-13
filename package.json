@@ -82,7 +82,7 @@
     "vitest": "^2.1.4"
   },
   "dependencies": {
-    "@hono/zod-openapi": "^0.16.4",
+    "@hono/zod-openapi": "^0.17.0",
     "hono": "^4.6.10",
     "zod": "^3.23.8"
   }
