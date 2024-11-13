@@ -15,12 +15,8 @@ jobs:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
-      - name: Install dependencies
-        run: yarn
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.PACKAGE_READ_TOKEN }}
-
-      - run: yarn lint
-      - run: yarn format:ci-cd
-      - run: yarn type-check
+      - run: pnpm install
+      - run: pnpm lint
+      - run: pnpm format:ci-cd
+      - run: pnpm type-check
       - run: yarn test
