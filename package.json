@@ -28,10 +28,6 @@
     "format:ci-cd": "prettier --check '**/*.{ts,css,json,md}'",
     "prepare": "husky"
   },
-  "files": [
-    "build",
-    "README.md"
-  ],
   "keywords": [],
   "author": "",
   "license": "MIT",
