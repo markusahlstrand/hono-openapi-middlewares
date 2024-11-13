@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.1...v1.0.2) (2024-11-13)
+
+
+### Bug Fixes
+
+* merge conflicts ([139fe9e](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/139fe9e0ed2fa3b4a190b7f47aabc21650070fb5))
+* update the bundle ([5b4048e](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/5b4048e76aab35e287c02d9cf3258d6da3489374))
+
 ## [1.0.1](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.0...v1.0.1) (2024-11-13)
 
 ### Bug Fixes
