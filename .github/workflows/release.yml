@@ -1,21 +1,37 @@
 name: Release
+
 on:
   push:
     branches:
       - main
+
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
-
-      - run: yarn install
-      - run: yarn build
-      - run: yarn semantic-release
+          
+      - name: Install dependencies
+        run: yarn install
+        
+      - name: Build
+        run: yarn build
+        
+      # Add this step to verify the build directory
+      - name: Verify build
+        run: |
+          ls -la build/
+          cat build/package.json
+        
+      - name: Release
+        run: yarn semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
