@@ -20,7 +20,7 @@
   "description": "",
   "scripts": {
     "dev": "vite",
-    "test": "vitest",
+    "test": "vitest --run",
     "build": "rimraf build/**/* && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts && copyfiles ./package.json build && copyfiles ./README.md build",
     "type-check": "tsc",
     "semantic-release": "semantic-release",
@@ -73,10 +73,12 @@
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-typescript": "^3.0.0",
+    "eslint-plugin-compat": "^6.0.1",
     "husky": "^9.1.6",
     "prettier": "^3.3.3",
     "semantic-release": "^24.2.0",
     "typescript": "^5.6.3",
+    "typescript-eslint": "^8.14.0",
     "vitest": "^2.1.4"
   },
   "dependencies": {

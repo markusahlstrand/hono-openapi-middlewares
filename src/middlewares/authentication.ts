@@ -3,7 +3,7 @@ import { Context, Next } from "hono";
 import { Bindings, Variables } from "../types";
 import { HTTPException } from "hono/http-exception";
 
-const JwksKeySchema = z.object({
+const jwksKeySchema = z.object({
   alg: z.literal("RS256"),
   kty: z.literal("RSA"),
   use: z.literal("sig"),
@@ -13,7 +13,6 @@ const JwksKeySchema = z.object({
   x5t: z.string(),
   x5c: z.array(z.string()),
 });
-type JwksKey = z.infer<typeof JwksKeySchema>;
 
 interface TokenData {
   header: {
@@ -47,10 +46,11 @@ async function getJwks(bindings: Bindings) {
       throw new Error("Failed to fetch jwks");
     }
 
-    const responseBody: { keys: JwksKey[] } = await response.json();
+    const responseBody = await response.json();
 
-    return responseBody.keys;
-  } catch (error: any) {
+    return z.array(jwksKeySchema).parse(responseBody.keys);
+  } catch (err) {
+    const error = err as Error;
     throw new HTTPException(500, {
       message:
         "Failed to fetch jwks: " +
