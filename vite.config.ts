@@ -23,7 +23,7 @@ const fileName = {
 module.exports = defineConfig({
   base: "./",
   build: {
-    outDir: "./build/dist",
+    outDir: "./build",
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),
       name: getPackageNameCamelCase(),

@@ -21,13 +21,17 @@
   "scripts": {
     "dev": "vite",
     "test": "vitest --run",
-    "build": "rimraf build/**/* && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts && copyfiles ./package.json build && copyfiles ./README.md build",
+    "build": "rimraf build/**/* && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts",
     "type-check": "tsc",
     "lint": "eslint src",
     "format": "prettier . --write",
     "format:ci-cd": "prettier --check '**/*.{ts,css,json,md}'",
     "prepare": "husky"
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "keywords": [],
   "author": "",
   "license": "MIT",
@@ -39,6 +43,12 @@
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
+      [
+        "@semantic-release/npm",
+        {
+          "pkgRoot": "build"
+        }
+      ],
       "@semantic-release/github",
       [
         "@semantic-release/git",
@@ -61,7 +71,6 @@
     "@semantic-release/npm": "^12.0.1",
     "@typescript-eslint/eslint-plugin": "^8.14.0",
     "@typescript-eslint/parser": "^8.14.0",
-    "copyfiles": "^2.4.1",
     "dts-bundle-generator": "^9.5.1",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^9.1.0",
