@@ -27,4 +27,3 @@ const app = new OpenAPIHono<{
 
 app.use(createAuthMiddleware(app));
 ```
-
