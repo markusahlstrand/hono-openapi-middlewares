@@ -6,7 +6,7 @@
     "registry": "https://registry.npmjs.org/",
     "tag": "latest"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/hono-openapi-middlewares.cjs",
   "module": "dist/hono-openapi-middlewares.mjs",
   "types": "dist/hono-openapi-middlewares.d.ts",
@@ -83,6 +83,7 @@
   },
   "dependencies": {
     "@hono/zod-openapi": "^0.17.0",
-    "hono": "^4.6.10"
+    "hono": "^4.6.10",
+    "zod": "^3.23.8"
   }
 }
