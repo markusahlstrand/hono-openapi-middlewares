@@ -14,12 +14,9 @@ jobs:
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
-      - run: pnpm install
-      - run: pnpm lint
-      - run: pnpm format:ci-cd
-      - run: pnpm type-check
-      - run: yarn test
+      - run: npm install
+      - run: npm run lint
+      - run: npm run format:ci-cd
+      - run: npm run type-check
+      - run: npm test
