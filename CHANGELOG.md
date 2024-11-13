@@ -1,11 +1,10 @@
 ## [1.0.1](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.0...v1.0.1) (2024-11-13)
 
-
 ### Bug Fixes
 
-* copy files to build folder ([d59b5f0](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/d59b5f0f94b32af6d7da201d29f930d74b88f87d))
-* format ([57b112f](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/57b112faa23eb88360f63b6da93e7756c15ed7a6))
-* npm publish ([8b3a733](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/8b3a7339b2199f2dbea48d6507da6ae044a71ca0))
+- copy files to build folder ([d59b5f0](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/d59b5f0f94b32af6d7da201d29f930d74b88f87d))
+- format ([57b112f](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/57b112faa23eb88360f63b6da93e7756c15ed7a6))
+- npm publish ([8b3a733](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/8b3a7339b2199f2dbea48d6507da6ae044a71ca0))
 
 # 1.0.0 (2024-11-13)
 

@@ -7,14 +7,14 @@
     "tag": "latest"
   },
   "version": "1.0.1",
-  "main": "dist/hono-openapi-middlewares.cjs",
-  "module": "dist/hono-openapi-middlewares.mjs",
-  "types": "dist/hono-openapi-middlewares.d.ts",
+  "main": "build/hono-openapi-middlewares.cjs",
+  "module": "build/hono-openapi-middlewares.mjs",
+  "types": "build/hono-openapi-middlewares.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/hono-openapi-middlewares.cjs",
-      "import": "./dist/hono-openapi-middlewares.mjs",
-      "types": "./dist/hono-openapi-middlewares.d.ts"
+      "require": "./build/hono-openapi-middlewares.cjs",
+      "import": "./build/hono-openapi-middlewares.mjs",
+      "types": "./build/hono-openapi-middlewares.d.ts"
     }
   },
   "description": "",
@@ -29,7 +29,7 @@
     "prepare": "husky"
   },
   "files": [
-    "dist",
+    "build",
     "README.md"
   ],
   "keywords": [],
@@ -57,7 +57,7 @@
       [
         "@semantic-release/npm",
         {
-          "pkgRoot": "build"          
+          "pkgRoot": "build"
         }
       ]
     ]
