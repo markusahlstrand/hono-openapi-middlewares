@@ -57,8 +57,7 @@
       [
         "@semantic-release/npm",
         {
-          "pkgRoot": "build",
-          "tarballDir": "dist"
+          "pkgRoot": "build"          
         }
       ]
     ]
