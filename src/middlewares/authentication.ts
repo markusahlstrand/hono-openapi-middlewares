@@ -8,8 +8,7 @@ export interface Fetcher {
 
 export interface AuthBindings {
   JWKS_URL: string;
-  JWKS_SERVICE: Fetcher;
-  JWKS_CACHE_TIMEOUT_IN_SECONDS?: number;
+  JWKS_SERVICE?: Fetcher;
 }
 
 const jwksKeySchema = z.object({
@@ -49,7 +48,9 @@ interface TokenData {
 
 async function getJwks(bindings: AuthBindings) {
   try {
-    const response = await bindings.JWKS_SERVICE.fetch(bindings.JWKS_URL);
+    const _fetch = bindings.JWKS_SERVICE?.fetch || fetch;
+
+    const response = await _fetch(bindings.JWKS_URL);
 
     if (!response.ok) {
       throw new Error('Failed to fetch jwks');
@@ -125,12 +126,17 @@ function decodeJwt(token: string): TokenData | null {
   };
 }
 
+export type AuthenticationGenerics = {
+  Bindings: AuthBindings;
+  Variables?: object;
+};
+
 /**
  * This registeres the authentication middleware. As it needs to read the OpenAPI definition, it needs to have a reference to the app.
  * @param app
  */
-export function createAuthMiddleware<B extends AuthBindings = AuthBindings>(
-  app: OpenAPIHono<{ Bindings: B }>,
+export function createAuthMiddleware<H extends AuthenticationGenerics>(
+  app: OpenAPIHono<H>,
 ) {
   return async (ctx: Context, next: Next) => {
     const definition = app.openAPIRegistry.definitions.find(

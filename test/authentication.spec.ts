@@ -5,13 +5,15 @@ import { createAuthMiddleware } from '../src/middlewares/authentication';
 
 interface Bindings {
   JWKS_URL: string;
-  JWKS_SERVICE: {
+  JWKS_SERVICE?: {
     fetch: typeof fetch;
   };
 }
 
 function getTestApp(security: string[] = []) {
-  const rootApp = new OpenAPIHono<{ Bindings: Bindings }>();
+  const rootApp = new OpenAPIHono<{
+    Bindings: Bindings;
+  }>();
 
   rootApp.use(createAuthMiddleware(rootApp));
 
