@@ -1,16 +1,14 @@
 ## [1.0.5](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.4...v1.0.5) (2024-11-14)
 
-
 ### Bug Fixes
 
-* externalize dependencies ([5e904a6](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/5e904a6eedb545bc2729b82ff29b533804ec4cf5))
+- externalize dependencies ([5e904a6](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/5e904a6eedb545bc2729b82ff29b533804ec4cf5))
 
 ## [1.0.4](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.3...v1.0.4) (2024-11-14)
 
-
 ### Bug Fixes
 
-* paths in package json ([b6d4bad](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/b6d4badf10c41e9097e009b8c8ae090a36a9f745))
+- paths in package json ([b6d4bad](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/b6d4badf10c41e9097e009b8c8ae090a36a9f745))
 
 ## [1.0.3](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.2...v1.0.3) (2024-11-13)
 

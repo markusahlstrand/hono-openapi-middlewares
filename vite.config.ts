@@ -1,6 +1,6 @@
 import path from "path";
 import { defineConfig } from "vite";
-import pkg from './package.json';
+import pkg from "./package.json";
 
 const getPackageName = () => {
   return pkg.name;
@@ -35,7 +35,7 @@ module.exports = defineConfig({
     rollupOptions: {
       // Externalize all dependencies in `package.json`
       external: [...Object.keys(pkg.dependencies || {})],
-    }
+    },
   },
   resolve: {
     alias: [
