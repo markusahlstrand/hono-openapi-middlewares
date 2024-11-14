@@ -1,19 +1,16 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { Context, Next } from 'hono';
 
-let inititated = false;
+let initiated = false;
 
+/**
++ * Generic type for OpenAPIHono application with authentication URL binding.
++ */
 export type RegisterComponentGenerics = {
   Bindings: {
     AUTH_URL: string;
   };
   Variables?: object;
-};
-
-export type RegisterComponentParams = {
-  type: string;
-  scheme: string;
-  flows: object;
 };
 
 /**
@@ -24,7 +21,7 @@ export function registerComponent<H extends RegisterComponentGenerics>(
   app: OpenAPIHono<H>,
 ) {
   app.use(async (ctx: Context<H>, next: Next) => {
-    if (!inititated) {
+    if (!initiated) {
       app.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
         type: 'oauth2',
         scheme: 'bearer',
@@ -40,7 +37,7 @@ export function registerComponent<H extends RegisterComponentGenerics>(
         },
       });
 
-      inititated = true;
+      initiated = true;
     }
 
     return await next();
