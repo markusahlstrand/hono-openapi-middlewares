@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.5...v1.0.6) (2024-11-14)
+
+
+### Bug Fixes
+
+* linting ([7f3774a](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/7f3774ae26d2f4034065696aea9e20dc3b6457ad))
+
 ## [1.0.5](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.4...v1.0.5) (2024-11-14)
 
 ### Bug Fixes
