@@ -1,8 +1,8 @@
 const config = {
   entries: [
     {
-      filePath: "./src/index.ts",
-      outFile: "./build/hono-openapi-middlewares.d.ts",
+      filePath: './src/index.ts',
+      outFile: './build/hono-openapi-middlewares.d.ts',
       noCheck: false,
     },
   ],
