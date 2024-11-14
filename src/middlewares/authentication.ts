@@ -1,7 +1,16 @@
 import { OpenAPIHono, z } from "@hono/zod-openapi";
 import { Context, Next } from "hono";
-import { Bindings, Variables } from "../types";
 import { HTTPException } from "hono/http-exception";
+
+export interface Fetcher {
+  fetch: typeof fetch;
+}
+
+export interface AuthBindings {
+  JWKS_URL: string;
+  JWKS_SERVICE: Fetcher;
+  JWKS_CACHE_TIMEOUT_IN_SECONDS?: number;
+}
 
 const jwksKeySchema = z.object({
   alg: z.literal("RS256"),
@@ -10,8 +19,8 @@ const jwksKeySchema = z.object({
   n: z.string(),
   e: z.string(),
   kid: z.string(),
-  x5t: z.string(),
-  x5c: z.array(z.string()),
+  x5t: z.string().optional(),
+  x5c: z.array(z.string()).optional(),
 });
 
 interface TokenData {
@@ -38,7 +47,7 @@ interface TokenData {
   };
 }
 
-async function getJwks(bindings: Bindings) {
+async function getJwks(bindings: AuthBindings) {
   try {
     const response = await bindings.JWKS_SERVICE.fetch(bindings.JWKS_URL);
 
@@ -65,7 +74,7 @@ async function isValidJwtSignature(ctx: Context, token: TokenData) {
   const encoder = new TextEncoder();
   const data = encoder.encode([token.raw.header, token.raw.payload].join("."));
   const signature = new Uint8Array(
-    Array.from(token.signature).map((c) => c.charCodeAt(0)),
+    Array.from(token.signature).map((c) => c.charCodeAt(0))
   );
   const jwksKeys = await getJwks(ctx.env);
 
@@ -81,7 +90,7 @@ async function isValidJwtSignature(ctx: Context, token: TokenData) {
     jwksKey,
     { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
     false,
-    ["verify"],
+    ["verify"]
   );
 
   return crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, signature, data);
@@ -120,15 +129,15 @@ function decodeJwt(token: string): TokenData | null {
  * This registeres the authentication middleware. As it needs to read the OpenAPI definition, it needs to have a reference to the app.
  * @param app
  */
-export function createAuthMiddleware(
-  app: OpenAPIHono<{ Bindings: Bindings; Variables: Variables }>,
+export function createAuthMiddleware<B extends AuthBindings = AuthBindings>(
+  app: OpenAPIHono<{ Bindings: B }>
 ) {
   return async (ctx: Context, next: Next) => {
     const definition = app.openAPIRegistry.definitions.find(
       (def) =>
         "route" in def &&
         def.route.path === ctx.req.path &&
-        def.route.method.toUpperCase() === ctx.req.method,
+        def.route.method.toUpperCase() === ctx.req.method
     );
 
     if (definition && "route" in definition) {
@@ -137,7 +146,7 @@ export function createAuthMiddleware(
       const authHeader = ctx.req.header("authorization") || "";
       const [authType, bearer] = authHeader.split(" ");
       if (authType?.toLowerCase() !== "bearer" || !bearer) {
-        throw new HTTPException(401, {
+        throw new HTTPException(403, {
           message: "Missing bearer token",
         });
       }
