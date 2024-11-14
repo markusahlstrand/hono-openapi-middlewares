@@ -6,15 +6,15 @@
     "registry": "https://registry.npmjs.org/",
     "tag": "latest"
   },
-  "version": "1.0.1",
-  "main": "build/hono-openapi-middlewares.cjs",
-  "module": "build/hono-openapi-middlewares.mjs",
-  "types": "build/hono-openapi-middlewares.d.ts",
+  "version": "1.0.3",
+  "main": "hono-openapi-middlewares.cjs",
+  "module": "hono-openapi-middlewares.mjs",
+  "types": "hono-openapi-middlewares.d.ts",
   "exports": {
     ".": {
-      "require": "./build/hono-openapi-middlewares.cjs",
-      "import": "./build/hono-openapi-middlewares.mjs",
-      "types": "./build/hono-openapi-middlewares.d.ts"
+      "require": "./hono-openapi-middlewares.cjs",
+      "import": "./hono-openapi-middlewares.mjs",
+      "types": "./hono-openapi-middlewares.d.ts"
     }
   },
   "description": "",
