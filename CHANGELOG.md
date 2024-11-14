@@ -1,3 +1,11 @@
+## [1.0.8](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.7...v1.0.8) (2024-11-14)
+
+
+### Bug Fixes
+
+* add register components middleware ([54314a2](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/54314a272872cd105ec5b987d2b228b05015d6d4))
+* review comments ([9f4bcdf](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/9f4bcdf5ef13779530409fa8b9be2aef9a6304b2))
+
 ## [1.0.7](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.6...v1.0.7) (2024-11-14)
 
 
