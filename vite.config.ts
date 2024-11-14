@@ -1,6 +1,6 @@
-import path from "path";
-import { defineConfig } from "vite";
-import pkg from "./package.json";
+import path from 'path';
+import { defineConfig } from 'vite';
+import pkg from './package.json';
 
 const getPackageName = () => {
   return pkg.name;
@@ -12,7 +12,7 @@ const getPackageNameCamelCase = () => {
   } catch (err: unknown) {
     const error = err as Error;
     throw new Error(
-      "Name property in package.json is missing: " + error.message,
+      'Name property in package.json is missing: ' + error.message,
     );
   }
 };
@@ -23,13 +23,13 @@ const fileName = {
 };
 
 module.exports = defineConfig({
-  base: "./",
+  base: './',
   build: {
-    outDir: "./build",
+    outDir: './build',
     lib: {
-      entry: path.resolve(__dirname, "src/index.ts"),
+      entry: path.resolve(__dirname, 'src/index.ts'),
       name: getPackageNameCamelCase(),
-      formats: ["es", "cjs"],
+      formats: ['es', 'cjs'],
       fileName: (format) => fileName[format],
     },
     rollupOptions: {
@@ -39,8 +39,8 @@ module.exports = defineConfig({
   },
   resolve: {
     alias: [
-      { find: "@", replacement: path.resolve(__dirname, "src") },
-      { find: "@@", replacement: path.resolve(__dirname) },
+      { find: '@', replacement: path.resolve(__dirname, 'src') },
+      { find: '@@', replacement: path.resolve(__dirname) },
     ],
   },
 });
