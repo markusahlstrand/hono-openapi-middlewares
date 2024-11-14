@@ -1,3 +1,11 @@
+## [1.0.7](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.6...v1.0.7) (2024-11-14)
+
+
+### Bug Fixes
+
+* align linting settings ([436f124](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/436f124ca389d54f2826374e65e1a124774dbe1c))
+* make generic and add tests ([b309800](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/b309800ed77030e8a795d3ece847aaa62a5fdb71))
+
 ## [1.0.6](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.5...v1.0.6) (2024-11-14)
 
 ### Bug Fixes
