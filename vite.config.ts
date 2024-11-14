@@ -9,14 +9,16 @@ const getPackageNameCamelCase = () => {
   try {
     return getPackageName().replace(/-./g, (char) => char[1].toUpperCase());
   } catch (err: unknown) {
-    const error  = err as Error;
-    throw new Error("Name property in package.json is missing: " + error.message);
+    const error = err as Error;
+    throw new Error(
+      "Name property in package.json is missing: " + error.message,
+    );
   }
 };
 
 const fileName = {
   es: `${getPackageName()}.mjs`,
-  cjs: `${getPackageName()}.cjs`,  
+  cjs: `${getPackageName()}.cjs`,
 };
 
 module.exports = defineConfig({

@@ -1,17 +1,15 @@
 ## [1.0.3](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.2...v1.0.3) (2024-11-13)
 
-
 ### Bug Fixes
 
-* remove files ([d1df577](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/d1df577d766dc543ad4fabe19523e5ef04beae44))
+- remove files ([d1df577](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/d1df577d766dc543ad4fabe19523e5ef04beae44))
 
 ## [1.0.2](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.1...v1.0.2) (2024-11-13)
 
-
 ### Bug Fixes
 
-* merge conflicts ([139fe9e](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/139fe9e0ed2fa3b4a190b7f47aabc21650070fb5))
-* update the bundle ([5b4048e](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/5b4048e76aab35e287c02d9cf3258d6da3489374))
+- merge conflicts ([139fe9e](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/139fe9e0ed2fa3b4a190b7f47aabc21650070fb5))
+- update the bundle ([5b4048e](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/5b4048e76aab35e287c02d9cf3258d6da3489374))
 
 ## [1.0.1](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.0...v1.0.1) (2024-11-13)
 
@@ -20,6 +18,7 @@
 - copy files to build folder ([d59b5f0](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/d59b5f0f94b32af6d7da201d29f930d74b88f87d))
 - format ([57b112f](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/57b112faa23eb88360f63b6da93e7756c15ed7a6))
 - npm publish ([8b3a733](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/8b3a7339b2199f2dbea48d6507da6ae044a71ca0))
+
 * copy files to build folder ([d59b5f0](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/d59b5f0f94b32af6d7da201d29f930d74b88f87d))
 * format ([57b112f](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/57b112faa23eb88360f63b6da93e7756c15ed7a6))
 * npm publish ([8b3a733](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/8b3a7339b2199f2dbea48d6507da6ae044a71ca0))
