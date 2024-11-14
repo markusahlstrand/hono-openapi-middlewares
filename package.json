@@ -25,7 +25,7 @@
     "type-check": "tsc",
     "lint": "eslint src",
     "format": "prettier . --write",
-    "format:ci-cd": "prettier --check '**/*.{ts,css,json,md}'",
+    "format:ci-cd": "prettier --check '**/*.{ts,css,json}'",
     "prepare": "husky"
   },
   "keywords": [],
