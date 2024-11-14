@@ -1,8 +1,9 @@
 import path from "path";
 import { defineConfig } from "vite";
+import pkg from './package.json';
 
 const getPackageName = () => {
-  return "hono-openapi-middlewares";
+  return pkg.name;
 };
 
 const getPackageNameCamelCase = () => {
@@ -31,6 +32,10 @@ module.exports = defineConfig({
       formats: ["es", "cjs"],
       fileName: (format) => fileName[format],
     },
+    rollupOptions: {
+      // Externalize all dependencies in `package.json`
+      external: [...Object.keys(pkg.dependencies || {})],
+    }
   },
   resolve: {
     alias: [
