@@ -1,4 +1,3 @@
-/// <reference types="vitest" />
 import path from "path";
 import { defineConfig } from "vite";
 
@@ -9,15 +8,15 @@ const getPackageName = () => {
 const getPackageNameCamelCase = () => {
   try {
     return getPackageName().replace(/-./g, (char) => char[1].toUpperCase());
-  } catch (err) {
-    throw new Error("Name property in package.json is missing.");
+  } catch (err: unknown) {
+    const error  = err as Error;
+    throw new Error("Name property in package.json is missing: " + error.message);
   }
 };
 
 const fileName = {
   es: `${getPackageName()}.mjs`,
-  cjs: `${getPackageName()}.cjs`,
-  iife: `${getPackageName()}.iife.js`,
+  cjs: `${getPackageName()}.cjs`,  
 };
 
 module.exports = defineConfig({
@@ -27,7 +26,7 @@ module.exports = defineConfig({
     lib: {
       entry: path.resolve(__dirname, "src/index.ts"),
       name: getPackageNameCamelCase(),
-      formats: ["es", "cjs", "iife"],
+      formats: ["es", "cjs"],
       fileName: (format) => fileName[format],
     },
   },
