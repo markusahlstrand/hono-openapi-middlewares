@@ -22,13 +22,13 @@ function getTestApp(security: string[] = []) {
 
   const app = rootApp
     // --------------------------------
-    // GET /
+    // GET /authenticated
     // --------------------------------
     .openapi(
       createRoute({
         tags: ['test'],
         method: 'get',
-        path: '/',
+        path: '/authenticated',
         security: [
           {
             Bearer: security,
@@ -42,6 +42,24 @@ function getTestApp(security: string[] = []) {
       }),
       async (ctx) => {
         return ctx.text('Hello World');
+      },
+    )
+    // --------------------------------
+    // GET /unauthenticated
+    // --------------------------------
+    .openapi(
+      createRoute({
+        tags: ['test'],
+        method: 'get',
+        path: '/unauthenticated',
+        responses: {
+          200: {
+            description: 'Status',
+          },
+        },
+      }),
+      async (ctx) => {
+        return ctx.text('Unauthenticated');
       },
     );
 
@@ -74,7 +92,7 @@ describe('authentication', () => {
   it('A request without a bearer should return a 403', async () => {
     const appClient = getTestApp();
 
-    const response = await appClient.index.$get();
+    const response = await appClient.authenticated.$get();
 
     expect(response.status).toBe(403);
     expect(await response.text()).toBe('Missing bearer token');
@@ -83,7 +101,7 @@ describe('authentication', () => {
   it('A request with a invalid bearer should return a 403', async () => {
     const appClient = getTestApp();
 
-    const response = await appClient.index.$get(
+    const response = await appClient.authenticated.$get(
       {},
       {
         headers: {
@@ -96,10 +114,19 @@ describe('authentication', () => {
     expect(await response.text()).toBe('Invalid JWT signature');
   });
 
+  it('A request to a unauthenticated endpoint without a bearer should return a 200', async () => {
+    const appClient = getTestApp();
+
+    const response = await appClient.unauthenticated.$get({});
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe('Unauthenticated');
+  });
+
   it('A request with a valid token should return a 200', async () => {
     const appClient = getTestApp();
 
-    const response = await appClient.index.$get(
+    const response = await appClient.authenticated.$get(
       {},
       {
         headers: {
@@ -115,7 +142,7 @@ describe('authentication', () => {
   it('A request with a valid token and matching permission should return a 200', async () => {
     const appClient = getTestApp(['podcasts:read', 'some:other:scope']);
 
-    const response = await appClient.index.$get(
+    const response = await appClient.authenticated.$get(
       {},
       {
         headers: {
@@ -131,7 +158,7 @@ describe('authentication', () => {
   it('A request with a valid token and non-matching permission should return a 403', async () => {
     const appClient = getTestApp(['some:other:scope']);
 
-    const response = await appClient.index.$get(
+    const response = await appClient.authenticated.$get(
       {},
       {
         headers: {
