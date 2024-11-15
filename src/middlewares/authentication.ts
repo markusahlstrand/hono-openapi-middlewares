@@ -46,11 +46,11 @@ interface TokenData {
   };
 }
 
-async function getJwks(bindings: AuthBindings) {
+const getJwks = async (bindings: AuthBindings) => {
   try {
-    const _fetch = bindings.JWKS_SERVICE?.fetch || fetch;
-
-    const response = await _fetch(bindings.JWKS_URL);
+    const response = await (bindings.JWKS_SERVICE
+      ? bindings.JWKS_SERVICE.fetch(bindings.JWKS_URL)
+      : fetch(bindings.JWKS_URL));
 
     if (!response.ok) {
       throw new Error('Failed to fetch jwks');
@@ -62,14 +62,10 @@ async function getJwks(bindings: AuthBindings) {
   } catch (err) {
     const error = err as Error;
     throw new HTTPException(500, {
-      message:
-        'Failed to fetch jwks: ' +
-        error.message +
-        ', ' +
-        JSON.stringify(bindings),
+      message: 'Failed to fetch jwks: ' + error.message,
     });
   }
-}
+};
 
 async function isValidJwtSignature(ctx: Context, token: TokenData) {
   const encoder = new TextEncoder();
