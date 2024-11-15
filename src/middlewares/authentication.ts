@@ -149,28 +149,30 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
     if (definition && 'route' in definition) {
       const requiredPermissions = definition.route.security?.[0]?.Bearer;
 
-      const authHeader = ctx.req.header('authorization') || '';
-      const [authType, bearer] = authHeader.split(' ');
-      if (authType?.toLowerCase() !== 'bearer' || !bearer) {
-        throw new HTTPException(403, {
-          message: 'Missing bearer token',
-        });
-      }
+      if (requiredPermissions) {
+        const authHeader = ctx.req.header('authorization') || '';
+        const [authType, bearer] = authHeader.split(' ');
+        if (authType?.toLowerCase() !== 'bearer' || !bearer) {
+          throw new HTTPException(403, {
+            message: 'Missing bearer token',
+          });
+        }
 
-      const token = decodeJwt(bearer);
+        const token = decodeJwt(bearer);
 
-      if (!token || !(await isValidJwtSignature(ctx, token))) {
-        throw new HTTPException(403, { message: 'Invalid JWT signature' });
-      }
+        if (!token || !(await isValidJwtSignature(ctx, token))) {
+          throw new HTTPException(403, { message: 'Invalid JWT signature' });
+        }
 
-      ctx.set('user_id', token.payload.sub);
+        ctx.set('user_id', token.payload.sub);
 
-      const permissions = token.payload.permissions || [];
-      if (
-        requiredPermissions?.length &&
-        !requiredPermissions.some((scope) => permissions.includes(scope))
-      ) {
-        throw new HTTPException(403, { message: 'Unauthorized' });
+        const permissions = token.payload.permissions || [];
+        if (
+          requiredPermissions?.length &&
+          !requiredPermissions.some((scope) => permissions.includes(scope))
+        ) {
+          throw new HTTPException(403, { message: 'Unauthorized' });
+        }
       }
     }
 

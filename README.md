@@ -41,8 +41,11 @@ app.use(createAuthMiddleware(app));
 The register components middleware adds security schemes with AUTH_URL based on the environment. As environment variables aren't available until a context is established, the schemes are added on the first request.
 
 ```typescript
-// Example environment variables:
-// AUTH_URL: 'https://auth.example.com'
+// Required environment variables:
+interface Bindings {
+  // The url of the auth service that is references from the swagger file
+  AUTH_URL: string;
+}
 
 const app = new OpenAPIHono<{
   Bindings: Bindings;

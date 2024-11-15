@@ -20,14 +20,14 @@ export type RegisterComponentGenerics = {
 export function registerComponent<H extends RegisterComponentGenerics>(
   app: OpenAPIHono<H>,
 ) {
-  app.use(async (ctx: Context<H>, next: Next) => {
+  return async (ctx: Context<H>, next: Next) => {
     if (!initiated) {
       app.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
         type: 'oauth2',
         scheme: 'bearer',
         flows: {
           implicit: {
-            authorizationUrl: `${ctx.env.AUTH_URL}/authorize`,
+            authorizationUrl: ctx.env.AUTH_URL,
             scopes: {
               openid: 'Basic user information',
               email: 'User email',
@@ -41,5 +41,5 @@ export function registerComponent<H extends RegisterComponentGenerics>(
     }
 
     return await next();
-  });
+  };
 }
