@@ -1,3 +1,10 @@
+## [1.0.10](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.9...v1.0.10) (2024-11-15)
+
+
+### Bug Fixes
+
+* do not expose bindings ([61d7b49](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/61d7b490dd6562825a465f33975d07fdd2ddc178))
+
 ## [1.0.9](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.8...v1.0.9) (2024-11-15)
 
 
