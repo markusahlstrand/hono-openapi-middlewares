@@ -1,3 +1,10 @@
+## [1.0.9](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.8...v1.0.9) (2024-11-15)
+
+
+### Bug Fixes
+
+* do not require bearer for unauthenticated routes ([9cb831d](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/9cb831da361e3b9e1d7b08b6fe8a6f5bd5b54d60))
+
 ## [1.0.8](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.7...v1.0.8) (2024-11-14)
 
 
