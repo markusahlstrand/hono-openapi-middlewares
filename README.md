@@ -15,6 +15,14 @@ A set of middlewares for using hono with zod-openapi:
 npm install openapi-middlewares
 ```
 
+## Peer dependencies
+
+The library has the following peer-dependencies that needs to be available:
+
+- @hono/zod-openapi
+- hono
+- zod
+
 ## Authentication middleware
 
 The authentication middleware needs to be created using the factory mehtod as it needs to have acces to the app instance.
