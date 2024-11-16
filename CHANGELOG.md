@@ -1,3 +1,10 @@
+## [1.0.11](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.10...v1.0.11) (2024-11-16)
+
+
+### Bug Fixes
+
+* use peer dependencies ([b4722bb](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/b4722bb3727bf3d083f4fcb881d834e019c9b501))
+
 ## [1.0.10](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.9...v1.0.10) (2024-11-15)
 
 
