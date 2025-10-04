@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.12...v1.1.0) (2025-10-04)
+
+
+### Bug Fixes
+
+* review comments ([bf422f9](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/bf422f939f86eebcb8b91507ea8b1a0489a317df))
+
+
+### Features
+
+* update auth middleware to handle permissions ([c67a043](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/c67a043590cac38d06e5aae587413f73dacb8605))
+
 ## [1.0.12](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.11...v1.0.12) (2025-10-04)
 
 
