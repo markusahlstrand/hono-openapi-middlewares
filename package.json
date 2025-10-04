@@ -6,7 +6,7 @@
     "registry": "https://registry.npmjs.org/",
     "tag": "latest"
   },
-  "version": "1.1.0",
+  "version": "1.1.1",
   "main": "hono-openapi-middlewares.cjs",
   "module": "hono-openapi-middlewares.mjs",
   "types": "hono-openapi-middlewares.d.ts",
@@ -23,7 +23,7 @@
     "test": "vitest --run",
     "build": "rimraf build/**/* && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts && copyfiles package.json build && copyfiles README.md build",
     "prepublishOnly": "npm run build",
-    "publish:manual": "npm run build && cd build && npm publish",
+    "publish:manual": "npm run build && cd build && npm publish --ignore-scripts",
     "type-check": "tsc",
     "lint": "eslint src",
     "format": "prettier . --write",

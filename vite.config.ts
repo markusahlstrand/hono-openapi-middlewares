@@ -22,7 +22,7 @@ const fileName = {
   cjs: `${getPackageName()}.cjs`,
 };
 
-module.exports = defineConfig({
+export default defineConfig({
   base: './',
   build: {
     outDir: './build',
@@ -33,8 +33,12 @@ module.exports = defineConfig({
       fileName: (format) => fileName[format],
     },
     rollupOptions: {
-      // Externalize all dependencies in `package.json`
-      external: [...Object.keys(pkg.dependencies || {})],
+      // Externalize peer dependencies and their sub-imports - they should be provided by the consumer
+      external: [
+        ...Object.keys(pkg.peerDependencies || {}).map(
+          (dep) => new RegExp(`^${dep}(/.*)?$`),
+        ),
+      ],
     },
   },
   resolve: {
