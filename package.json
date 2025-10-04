@@ -22,12 +22,20 @@
     "dev": "vite",
     "test": "vitest --run",
     "build": "rimraf build/**/* && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts && copyfiles package.json build && copyfiles README.md build",
+    "prepublishOnly": "npm run build",
+    "publish:manual": "npm run build && cd build && npm publish",
     "type-check": "tsc",
     "lint": "eslint src",
     "format": "prettier . --write",
     "format:ci-cd": "prettier --check '**/*.{ts,css,json}'",
     "prepare": "husky"
   },
+  "files": [
+    "hono-openapi-middlewares.cjs",
+    "hono-openapi-middlewares.mjs",
+    "hono-openapi-middlewares.d.ts",
+    "README.md"
+  ],
   "keywords": [
     "hono",
     "openapi",
@@ -56,7 +64,12 @@
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
-      "@semantic-release/npm",
+      [
+        "@semantic-release/npm",
+        {
+          "pkgRoot": "build"
+        }
+      ],
       [
         "@semantic-release/git",
         {
@@ -97,9 +110,9 @@
     "zod": "^4.1.11"
   },
   "peerDependencies": {
-    "@hono/zod-openapi": "^1.1.3",
-    "hono": "^4.9.9",
-    "zod": "^4.1.11"
+    "@hono/zod-openapi": "^1.0.0",
+    "hono": "^4.9.0",
+    "zod": "^4.0.0"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

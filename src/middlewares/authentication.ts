@@ -27,7 +27,9 @@ export type AuthenticationGenerics = {
  * Type guard to validate that permissions is a string array
  */
 function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === 'string');
+  return (
+    Array.isArray(value) && value.every((item) => typeof item === 'string')
+  );
 }
 
 /**
