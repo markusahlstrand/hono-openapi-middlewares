@@ -1,3 +1,13 @@
+## [1.1.1](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.1.0...v1.1.1) (2025-10-04)
+
+
+### Bug Fixes
+
+* add hono 4.9.0 as peer dependency ([9b19cbc](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/9b19cbc2af7df1a9c057fed9af9e69dafd793dcf))
+* build issue ([c6c66b6](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/c6c66b68d9e33bbf2b7c333156050201a404dba7))
+* lower peer dependencies ([ddab4c8](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/ddab4c8c455ae16cf8bd3e4c7459eb10f83b74a5))
+* update peer dependencies ([08ca6c5](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/08ca6c5c52bb22768a2e58fe83e6b5bdec7dd8d1))
+
 # [1.1.0](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.0.12...v1.1.0) (2025-10-04)
 
 
