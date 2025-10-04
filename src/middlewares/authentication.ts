@@ -24,6 +24,13 @@ export type AuthenticationGenerics = {
 };
 
 /**
+ * Type guard to validate that permissions is a string array
+ */
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string');
+}
+
+/**
  * This registers the authentication middleware. As it needs to read the OpenAPI definition, it needs to have a reference to the app.
  * @param app
  */
@@ -75,7 +82,9 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
           ctx.set('user_id', payload.sub);
 
           // Check permissions if required
-          const permissions = (payload.permissions as string[]) || [];
+          const permissions = isStringArray(payload.permissions)
+            ? payload.permissions
+            : [];
           if (
             requiredPermissions?.length &&
             !requiredPermissions.some((scope) => permissions.includes(scope))

@@ -232,25 +232,25 @@ After successful authentication, the entire JWT payload is available in the cont
 app.openapi(route, async (ctx) => {
   // Access the full JWT payload
   const user = ctx.get('user');
-  
+
   // Available properties (depending on your JWT):
-  const userId = user.sub;           // Subject (user ID)
-  const email = user.email;          // Email (if included)
+  const userId = user.sub; // Subject (user ID)
+  const email = user.email; // Email (if included)
   const permissions = user.permissions; // Permissions array
-  const issuer = user.iss;           // Token issuer
-  const audience = user.aud;         // Token audience
-  
+  const issuer = user.iss; // Token issuer
+  const audience = user.aud; // Token audience
+
   // Or use the shortcut for user ID
   const userId = ctx.get('user_id'); // Same as user.sub
-  
+
   // Use for database queries, logging, etc.
   const userProfile = await db.users.findById(userId);
-  
-  return ctx.json({ 
+
+  return ctx.json({
     userId,
     email,
     permissions,
-    profile: userProfile 
+    profile: userProfile,
   });
 });
 ```
@@ -259,7 +259,7 @@ app.openapi(route, async (ctx) => {
 
 To get proper TypeScript types, extend your app's Variables:
 
-```typescript
+````typescript
 import type { JWTPayload } from 'hono/utils/jwt/types';
 import { OpenAPIHono } from '@hono/zod-openapi';
 
@@ -317,10 +317,10 @@ app.openapi(
   }),
   async (ctx) => {
     const user = ctx.get('user');
-    return ctx.json({ 
+    return ctx.json({
       userId: user.sub,
       email: user.email,
-      permissions: user.permissions 
+      permissions: user.permissions
     });
   },
 );
@@ -345,7 +345,7 @@ app.openapi(
 );
 
 export default app;
-```
+````
 
 ### Best Practices
 
