@@ -22,12 +22,20 @@
     "dev": "vite",
     "test": "vitest --run",
     "build": "rimraf build/**/* && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts && copyfiles package.json build && copyfiles README.md build",
+    "prepublishOnly": "npm run build",
+    "publish:manual": "npm run build && cd build && npm publish",
     "type-check": "tsc",
     "lint": "eslint src",
     "format": "prettier . --write",
     "format:ci-cd": "prettier --check '**/*.{ts,css,json}'",
     "prepare": "husky"
   },
+  "files": [
+    "hono-openapi-middlewares.cjs",
+    "hono-openapi-middlewares.mjs",
+    "hono-openapi-middlewares.d.ts",
+    "README.md"
+  ],
   "keywords": [
     "hono",
     "openapi",
@@ -56,7 +64,12 @@
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
-      "@semantic-release/npm",
+      [
+        "@semantic-release/npm",
+        {
+          "pkgRoot": "build"
+        }
+      ],
       [
         "@semantic-release/git",
         {
