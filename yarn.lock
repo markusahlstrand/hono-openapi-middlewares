@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@asteasolutions/zod-to-openapi@^8.1.0":
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/@asteasolutions/zod-to-openapi/-/zod-to-openapi-8.1.0.tgz#7fa984c72f796f9c266fd8c6aabecaa22de66115"
-  integrity sha512-tQFxVs05J/6QXXqIzj6rTRk3nj1HFs4pe+uThwE95jL5II2JfpVXkK+CqkO7aT0Do5AYqO6LDrKpleLUFXgY+g==
+"@asteasolutions/zod-to-openapi@^7.3.0":
+  version "7.3.4"
+  resolved "https://registry.yarnpkg.com/@asteasolutions/zod-to-openapi/-/zod-to-openapi-7.3.4.tgz#ccf8c6c32f0092df23e9fc90c5e060316826eb15"
+  integrity sha512-/2rThQ5zPi9OzVwes6U7lK1+Yvug0iXu25olp7S0XsYmOqnyMfxH7gdSQjn/+DSOHRg7wnotwGJSyL+fBKdnEA==
   dependencies:
     openapi3-ts "^4.1.2"
 
@@ -408,16 +408,16 @@
     "@eslint/core" "^0.16.0"
     levn "^0.4.1"
 
-"@hono/zod-openapi@^1.1.3":
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/@hono/zod-openapi/-/zod-openapi-1.1.3.tgz#a2ddba397818d88fd3a956fcfc8276f43f24d942"
-  integrity sha512-ikA8p0Jt7yplxOqbYwdh8rCQWaGN4bu8zK1HbCWqfWT9clo87L32D0eAQ/r0tJodtZbTV5d1vPB75FCkUt1Jdg==
+"@hono/zod-openapi@^0.19.10":
+  version "0.19.10"
+  resolved "https://registry.yarnpkg.com/@hono/zod-openapi/-/zod-openapi-0.19.10.tgz#1002cdd6d07c9ac8aa9ae98e076d5f272ddcc9df"
+  integrity sha512-dpoS6DenvoJyvxtQ7Kd633FRZ/Qf74+4+o9s+zZI8pEqnbjdF/DtxIib08WDpCaWabMEJOL5TXpMgNEZvb7hpA==
   dependencies:
-    "@asteasolutions/zod-to-openapi" "^8.1.0"
-    "@hono/zod-validator" "^0.7.3"
+    "@asteasolutions/zod-to-openapi" "^7.3.0"
+    "@hono/zod-validator" "^0.7.1"
     openapi3-ts "^4.5.0"
 
-"@hono/zod-validator@^0.7.3":
+"@hono/zod-validator@^0.7.1":
   version "0.7.3"
   resolved "https://registry.yarnpkg.com/@hono/zod-validator/-/zod-validator-0.7.3.tgz#54ffc71df6cc6b207bde47d5a1afb26e6a3fab7d"
   integrity sha512-uYGdgVib3RlGD698WR5dVM0zB3UuPY5vHKXffGUbUh7r4xY+mFIhF3/v4AcQVLrU5CQdBso8BJr4wuVoCrjTuQ==
@@ -5697,7 +5697,7 @@ yoctocolors@^2.0.0:
   resolved "https://registry.yarnpkg.com/yoctocolors/-/yoctocolors-2.1.1.tgz#e0167474e9fbb9e8b3ecca738deaa61dd12e56fc"
   integrity sha512-GQHQqAopRhwU8Kt1DDM8NjibDXHC8eoh1erhGAJPEyveY9qqVeXvVikNKrDz69sHowPMorbPUrH/mx8c50eiBQ==
 
-zod@^4.1.11:
-  version "4.1.11"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-4.1.11.tgz#4aab62f76cfd45e6c6166519ba31b2ea019f75f5"
-  integrity sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg==
+zod@^3.25.76:
+  version "3.25.76"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.76.tgz#26841c3f6fd22a6a2760e7ccb719179768471e34"
+  integrity sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==
