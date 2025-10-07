@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.1.2...v1.1.3) (2025-10-07)
+
+
+### Bug Fixes
+
+* there are issues with zod4 so move back to zod3 ([a5b4d2a](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/a5b4d2ab0982ade7454645f113399ddb74417b31))
+
 ## [1.1.2](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.1.1...v1.1.2) (2025-10-04)
 
 
