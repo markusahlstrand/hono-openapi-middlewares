@@ -1,3 +1,11 @@
+## [1.1.4](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.1.3...v1.1.4) (2025-10-07)
+
+
+### Bug Fixes
+
+* ci release ([4ac42da](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/4ac42da8849b3371ebf5e3d633858b28c8960e47))
+* semantic release ([aea2ada](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/aea2ada979231ffb6c66a72046d36927381ad5e2))
+
 ## [1.1.3](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.1.2...v1.1.3) (2025-10-07)
 
 
