@@ -144,7 +144,7 @@ To require specific permissions, list them in the Bearer array:
 app.openapi(
   createRoute({
     method: 'post',
-    path: '/posts',C
+    path: '/posts',
     security: [
       {
         Bearer: ['posts:write', 'content:create'], // Requires at least one of these permissions
