@@ -373,4 +373,156 @@ describe('authentication', () => {
       expect(await response.text()).toBe('Post found');
     });
   });
+
+  describe('JWKS error handling', () => {
+    it('Should return 502 when JWKS endpoint returns error status', async () => {
+      const rootApp = new OpenAPIHono<{ Bindings: Bindings }>();
+      rootApp.use(createAuthMiddleware(rootApp));
+
+      const app = rootApp.openapi(
+        createRoute({
+          tags: ['test'],
+          method: 'get',
+          path: '/protected',
+          security: [{ Bearer: [] }],
+          responses: { 200: { description: 'Success' } },
+        }),
+        async (ctx) => ctx.text('Success'),
+      );
+
+      const appClient = testClient(app, {
+        JWKS_URL: 'https://example.com',
+        JWKS_SERVICE: {
+          fetch: async () => new Response('Not Found', { status: 404 }),
+        },
+      });
+
+      const response = await appClient.protected.$get(
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      expect(response.status).toBe(502);
+      expect(await response.text()).toBe('JWKS endpoint returned 404');
+    });
+
+    it('Should return 502 when JWKS response is not valid JSON', async () => {
+      const rootApp = new OpenAPIHono<{ Bindings: Bindings }>();
+      rootApp.use(createAuthMiddleware(rootApp));
+
+      const app = rootApp.openapi(
+        createRoute({
+          tags: ['test'],
+          method: 'get',
+          path: '/protected',
+          security: [{ Bearer: [] }],
+          responses: { 200: { description: 'Success' } },
+        }),
+        async (ctx) => ctx.text('Success'),
+      );
+
+      const appClient = testClient(app, {
+        JWKS_URL: 'https://example.com',
+        JWKS_SERVICE: {
+          fetch: async () =>
+            new Response('invalid json', {
+              headers: { 'Content-Type': 'application/json' },
+            }),
+        },
+      });
+
+      const response = await appClient.protected.$get(
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      expect(response.status).toBe(502);
+      expect(await response.text()).toBe('Failed to parse JWKS response');
+    });
+
+    it('Should return 502 when JWKS format is invalid (missing keys)', async () => {
+      const rootApp = new OpenAPIHono<{ Bindings: Bindings }>();
+      rootApp.use(createAuthMiddleware(rootApp));
+
+      const app = rootApp.openapi(
+        createRoute({
+          tags: ['test'],
+          method: 'get',
+          path: '/protected',
+          security: [{ Bearer: [] }],
+          responses: { 200: { description: 'Success' } },
+        }),
+        async (ctx) => ctx.text('Success'),
+      );
+
+      const appClient = testClient(app, {
+        JWKS_URL: 'https://example.com',
+        JWKS_SERVICE: {
+          fetch: async () =>
+            new Response(JSON.stringify({ invalid: 'format' }), {
+              headers: { 'Content-Type': 'application/json' },
+            }),
+        },
+      });
+
+      const response = await appClient.protected.$get(
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      expect(response.status).toBe(502);
+      const responseText = await response.text();
+      expect(responseText).toContain('Invalid JWKS format');
+      expect(responseText).toContain('keys');
+    });
+
+    it('Should return 503 when JWKS fetch fails with network error', async () => {
+      const rootApp = new OpenAPIHono<{ Bindings: Bindings }>();
+      rootApp.use(createAuthMiddleware(rootApp));
+
+      const app = rootApp.openapi(
+        createRoute({
+          tags: ['test'],
+          method: 'get',
+          path: '/protected',
+          security: [{ Bearer: [] }],
+          responses: { 200: { description: 'Success' } },
+        }),
+        async (ctx) => ctx.text('Success'),
+      );
+
+      const appClient = testClient(app, {
+        JWKS_URL: 'https://example.com',
+        JWKS_SERVICE: {
+          fetch: async () => {
+            throw new Error('Network error');
+          },
+        },
+      });
+
+      const response = await appClient.protected.$get(
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      expect(response.status).toBe(503);
+      expect(await response.text()).toBe('JWKS service unavailable');
+    });
+
+    it('Should still return 403 for invalid JWT signature (client error)', async () => {
+      const appClient = getTestApp([]);
+
+      const response = await appClient.authenticated.$get(
+        {},
+        {
+          headers: {
+            Authorization: 'Bearer invalid.jwt.token',
+          },
+        },
+      );
+
+      expect(response.status).toBe(403);
+      expect(await response.text()).toBe('Invalid JWT signature');
+    });
+  });
 });

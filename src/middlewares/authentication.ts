@@ -3,10 +3,50 @@ import { Context, Next } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { Jwt } from 'hono/utils/jwt';
 import type { JWTPayload } from 'hono/utils/jwt/types';
+import { z } from 'zod';
 
 export interface Fetcher {
   fetch: typeof fetch;
 }
+
+/**
+ * JSON Web Key (JWK) schema for JWKS validation
+ * Based on RFC 7517: https://tools.ietf.org/html/rfc7517
+ */
+const JWKSchema = z.object({
+  kty: z.string(), // Key Type (required)
+  use: z.string().optional(), // Public Key Use
+  key_ops: z.array(z.string()).optional(), // Key Operations
+  alg: z.string().optional(), // Algorithm
+  kid: z.string().optional(), // Key ID
+  x5u: z.string().optional(), // X.509 URL
+  x5c: z.array(z.string()).optional(), // X.509 Certificate Chain
+  x5t: z.string().optional(), // X.509 Certificate SHA-1 Thumbprint
+  'x5t#S256': z.string().optional(), // X.509 Certificate SHA-256 Thumbprint
+  // RSA-specific parameters
+  n: z.string().optional(), // Modulus
+  e: z.string().optional(), // Exponent
+  // EC-specific parameters
+  crv: z.string().optional(), // Curve
+  x: z.string().optional(), // X Coordinate
+  y: z.string().optional(), // Y Coordinate
+  // Symmetric key parameter
+  k: z.string().optional(), // Key Value
+});
+
+/**
+ * JSON Web Key Set (JWKS) schema
+ * Based on RFC 7517: https://tools.ietf.org/html/rfc7517#section-5
+ */
+const JWKSSchema = z.object({
+  keys: z.array(JWKSchema).min(1, 'JWKS must contain at least one key'),
+});
+
+/**
+ * Type inference from the JWKS schema
+ */
+export type JWKSData = z.infer<typeof JWKSSchema>;
+export type JWK = z.infer<typeof JWKSchema>;
 
 export interface AuthBindings {
   JWKS_URL: string;
@@ -188,17 +228,56 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
         });
       }
 
+      let jwksData: JWKSData;
+
       try {
         // Fetch JWKS keys
         const fetcher = ctx.env.JWKS_SERVICE?.fetch || fetch;
         const jwksResponse = await fetcher(ctx.env.JWKS_URL);
 
         if (!jwksResponse.ok) {
-          throw new Error('Failed to fetch JWKS');
+          // JWKS endpoint returned an error status
+          throw new HTTPException(502, {
+            message: `JWKS endpoint returned ${jwksResponse.status}`,
+          });
         }
 
-        const jwksData = await jwksResponse.json();
+        let rawData: unknown;
+        try {
+          rawData = await jwksResponse.json();
+        } catch (parseError) {
+          // Failed to parse JWKS response as JSON
+          throw new HTTPException(502, {
+            message: 'Failed to parse JWKS response',
+          });
+        }
 
+        // Validate JWKS format with zod schema
+        const parseResult = JWKSSchema.safeParse(rawData);
+        if (!parseResult.success) {
+          // Invalid JWKS format - provide detailed error from zod
+          const errorMessage = parseResult.error.issues
+            .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+            .join(', ');
+          throw new HTTPException(502, {
+            message: `Invalid JWKS format: ${errorMessage}`,
+          });
+        }
+
+        jwksData = parseResult.data;
+      } catch (err) {
+        // Re-throw HTTPException as-is
+        if (err instanceof HTTPException) {
+          throw err;
+        }
+
+        // Network error or other fetch failure
+        throw new HTTPException(503, {
+          message: 'JWKS service unavailable',
+        });
+      }
+
+      try {
         // Use Hono's JWT utility to verify the token with the fetched JWKS keys
         const payload = await Jwt.verifyWithJwks(bearer, {
           keys: jwksData.keys,
@@ -229,11 +308,12 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
           throw new HTTPException(403, { message: 'Unauthorized' });
         }
       } catch (err) {
-        // Re-throw HTTPException as-is (for Unauthorized errors)
+        // Re-throw HTTPException as-is (for permission check failures)
         if (err instanceof HTTPException) {
           throw err;
         }
 
+        // JWT verification failed - this is a client error (invalid token)
         throw new HTTPException(403, {
           message: 'Invalid JWT signature',
         });
