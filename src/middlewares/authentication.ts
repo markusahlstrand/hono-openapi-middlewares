@@ -166,13 +166,13 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
     // Use the matchedRoutes helper from hono/route for better route matching
     // Prefer the last match (most specific/deepest) over parent routes by reversing
     const normalizedMethod = ctx.req.method.toUpperCase();
-    
+
     interface MatchedRoute {
       method: string;
       path: string;
       basePath?: string;
     }
-    
+
     let matchedRoute: MatchedRoute | undefined = undefined;
 
     try {
