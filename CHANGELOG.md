@@ -1,3 +1,16 @@
+## [1.1.5](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.1.4...v1.1.5) (2025-10-17)
+
+
+### Bug Fixes
+
+* check expires ([60e8dae](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/60e8dae4d1bb4492e79a4ec90b2b2565b512d665))
+* formatting ([97eadfa](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/97eadfaa2852a6afd0187812009ba5c8ddf699c1))
+* improve route matching ([0943b36](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/0943b36cdadd012ffeb0be1e61cd9c2c7d5be311))
+* linting ([ea45ef6](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/ea45ef6d784a10f6e150678d7d6c3568ccb9b4e5))
+* review comments ([878dd18](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/878dd182d93febb23d11d78032d7518294f1860d))
+* review comments ([30c4002](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/30c4002beaf152e7b9af90a0a37fbf7b953954f4))
+* review comments ([9ea0239](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/9ea02391fc689d4b25573433c0f558da9f7e328c))
+
 ## [1.1.4](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.1.3...v1.1.4) (2025-10-07)
 
 
