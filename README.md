@@ -44,14 +44,65 @@ const app = new OpenAPIHono<{
 
 // Apply authentication middleware globally
 app.use(createAuthMiddleware(app));
+
+// Or with debug logging enabled
+app.use(
+  createAuthMiddleware(app, {
+    logLevel: 'info', // Enable detailed authentication logging
+  }),
+);
+```
+
+### Configuration Options
+
+The `createAuthMiddleware` function accepts an optional configuration object:
+
+```typescript
+interface AuthMiddlewareOptions {
+  /**
+   * Log level for the middleware. Defaults to "warn".
+   * Set to "info" to enable detailed logging of authentication events.
+   */
+  logLevel?: 'info' | 'warn';
+}
+```
+
+**Debug Logging:**
+
+When `logLevel` is set to `'info'`, the middleware will log:
+
+- When authentication middleware is triggered for a route
+- The route being accessed and required permissions
+- Successful user authentication with JWT payload details
+
+This is useful for debugging authentication issues in development:
+
+```typescript
+app.use(
+  createAuthMiddleware(app, {
+    logLevel: process.env.NODE_ENV === 'development' ? 'info' : 'warn',
+  }),
+);
+
+// Console output when enabled:
+// Authentication middleware triggered { route: 'GET /authenticated', requiredPermissions: ['posts:read'] }
+// User authenticated { user: { sub: 'user123', permissions: [...], ... } }
 ```
 
 ### How Authentication Works
 
 1. **Route-level security**: Define security requirements in your OpenAPI route definitions
-2. **JWT validation**: The middleware validates JWT tokens against your JWKS endpoint
-3. **Permission enforcement**: Checks if the token contains required permissions
-4. **Context population**: Stores the full JWT payload as `user` and user ID as `user_id` in the context
+2. **Improved route matching**: The middleware properly matches routes with path parameters (e.g., `/users/:id`) and handles base paths correctly
+3. **JWT validation**: The middleware validates JWT tokens against your JWKS endpoint
+4. **Permission enforcement**: Checks if the token contains required permissions
+5. **Context population**: Stores the full JWT payload as `user` and user ID as `user_id` in the context
+
+**Route Matching Features:**
+
+- Converts Hono route syntax (`:param`) to OpenAPI syntax (`{param}`) for accurate matching
+- Handles routes with base paths correctly by combining them with definition paths
+- Skips wildcard routes (`/*`) to avoid incorrect matches
+- Matches both route path and HTTP method for precise route identification
 
 ### Defining Protected Routes
 
@@ -200,11 +251,26 @@ paths:
 
 The middleware returns these HTTP exceptions:
 
-| Status | Message               | Cause                                     |
-| ------ | --------------------- | ----------------------------------------- |
-| 403    | Missing bearer token  | No Authorization header or invalid format |
-| 403    | Invalid JWT signature | Token validation failed or expired        |
-| 403    | Unauthorized          | User lacks required permissions           |
+| Status | Message                         | Type   | Cause                                     |
+| ------ | ------------------------------- | ------ | ----------------------------------------- |
+| 403    | Missing bearer token            | Client | No Authorization header or invalid format |
+| 403    | Invalid JWT signature           | Client | Token validation failed or expired        |
+| 403    | Unauthorized                    | Client | User lacks required permissions           |
+| 502    | JWKS endpoint returned {status} | Server | JWKS endpoint returned non-200 status     |
+| 502    | Failed to parse JWKS response   | Server | JWKS response is not valid JSON           |
+| 502    | Invalid JWKS format             | Server | JWKS response missing `keys` array        |
+| 503    | JWKS service unavailable        | Server | Network error or JWKS fetch failure       |
+
+**Error Type Distinction:**
+
+- **4xx (Client Errors)**: Issues with the client's request or token - clients should fix their request
+- **5xx (Server Errors)**: Issues with JWKS infrastructure - operations team should investigate
+
+This distinction helps with:
+
+- **Monitoring**: Alert ops teams on 5xx errors (infrastructure issues)
+- **Client UX**: Provide appropriate error messages based on error type
+- **Debugging**: Quickly identify whether the issue is with the client or server
 
 ### Advanced Configuration
 

@@ -1,1 +1,3 @@
+yarn format:ci-cd
+yarn lint
 yarn test
