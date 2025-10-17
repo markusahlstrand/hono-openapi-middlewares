@@ -34,19 +34,66 @@ function isStringArray(value: unknown): value is string[] {
 
 /**
  * Convert Hono route syntax (:param) to OpenAPI syntax ({param})
+ * Handles optional params (:id?) and typed params (:id{[0-9]+})
+ * @internal Exported for testing purposes
  */
-function convertRouteSyntax(route: string) {
-  return route.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, '{$1}');
+export function convertRouteSyntax(route: string) {
+  // Match :paramName followed by optional type constraint {...} and/or optional marker ?
+  // Examples: :id, :id?, :id{[0-9]+}, :id{[0-9]+}?
+  return route.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)(\{[^}]+\})?\??/g, '{$1}');
+}
+
+/**
+ * Normalize a path for consistent comparison
+ * Removes trailing slashes and collapses multiple consecutive slashes
+ * Ensures leading slash
+ * @internal Exported for testing purposes
+ */
+export function normalizePath(path: string): string {
+  if (!path) return '/';
+
+  // Remove trailing slashes (except for root path)
+  // Collapse multiple consecutive slashes to single slash
+  let normalized = path.replace(/\/+/g, '/').replace(/\/+$/, '');
+
+  // Ensure leading slash
+  if (!normalized.startsWith('/')) {
+    normalized = `/${normalized}`;
+  }
+
+  // Handle edge case: empty after removing trailing slash means root
+  return normalized === '' ? '/' : normalized;
 }
 
 /**
  * Get the absolute path for a definition by combining basePath with the definition path
+ * Normalizes slashes to prevent double slashes or missing leading slash
+ * @internal Exported for testing purposes
  */
-function getAbsoluteDefinitionPath(basePath: string, definitionPath: string) {
-  if (definitionPath.startsWith(basePath)) {
+export function getAbsoluteDefinitionPath(
+  basePath: string,
+  definitionPath: string,
+) {
+  // Only skip normalization if basePath is not empty and definitionPath already starts with it
+  if (basePath && definitionPath.startsWith(basePath)) {
     return definitionPath;
   }
-  return basePath + definitionPath;
+
+  // Normalize paths: remove trailing slashes from basePath and leading slashes from definitionPath
+  const normalizedBasePath = basePath.replace(/\/+$/, ''); // Remove trailing slashes
+  const normalizedDefinitionPath = definitionPath.replace(/^\/+/, ''); // Remove leading slashes
+
+  // Combine paths
+  let combined =
+    normalizedBasePath === ''
+      ? normalizedDefinitionPath
+      : `${normalizedBasePath}/${normalizedDefinitionPath}`;
+
+  // Remove any double slashes
+  combined = combined.replace(/\/+/g, '/');
+
+  // Ensure the result starts with a slash
+  return combined.startsWith('/') ? combined : `/${combined}`;
 }
 
 export interface AuthMiddlewareOptions {
@@ -72,10 +119,25 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
     let basePath = '';
 
     // Try to use matchedRoutes for better route matching
-    const matchedRoute = ctx.req.matchedRoutes.find(
-      (route) =>
-        route.method.toUpperCase() === ctx.req.method && route.path !== '/*',
-    );
+    // Guard against undefined matchedRoutes (some Hono versions may not set it)
+    // Prefer the last match (most specific/deepest) over parent routes by reversing
+    const normalizedMethod = ctx.req.method.toUpperCase();
+    let matchedRoute: any = undefined;
+
+    try {
+      if (ctx.req.matchedRoutes && Array.isArray(ctx.req.matchedRoutes)) {
+        // Reverse to prefer the most specific (deepest) match
+        const routes = [...ctx.req.matchedRoutes].reverse();
+        matchedRoute = routes.find(
+          (route) =>
+            route.method.toUpperCase() === normalizedMethod &&
+            route.path !== '/*',
+        );
+      }
+    } catch {
+      // Silently fail if matchedRoutes is not accessible
+      matchedRoute = undefined;
+    }
 
     if (matchedRoute) {
       // Convert Hono route syntax to OpenAPI syntax
@@ -87,12 +149,21 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
           : '';
     }
 
-    const definition = app.openAPIRegistry.definitions.find(
-      (def) =>
-        'route' in def &&
-        getAbsoluteDefinitionPath(basePath, def.route.path) === matchedPath &&
-        def.route.method.toUpperCase() === ctx.req.method.toUpperCase(),
-    );
+    // Normalize both paths for consistent comparison
+    const normalizedMatchedPath = normalizePath(matchedPath);
+
+    const definition = app.openAPIRegistry.definitions.find((def) => {
+      if (!('route' in def)) return false;
+
+      const normalizedDefinitionPath = normalizePath(
+        getAbsoluteDefinitionPath(basePath, def.route.path),
+      );
+
+      return (
+        normalizedDefinitionPath === normalizedMatchedPath &&
+        def.route.method.toUpperCase() === normalizedMethod
+      );
+    });
 
     if (definition && 'route' in definition) {
       const requiredPermissions = definition.route.security?.[0]?.Bearer;

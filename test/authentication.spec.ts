@@ -91,6 +91,82 @@ function getTestApp(security: string[] = [], options?: AuthMiddlewareOptions) {
   });
 }
 
+function getTestAppWithParams(security: string[] = []) {
+  const rootApp = new OpenAPIHono<{
+    Bindings: Bindings;
+  }>();
+
+  rootApp.use(createAuthMiddleware(rootApp));
+
+  const app = rootApp
+    // Test route with simple param
+    .openapi(
+      createRoute({
+        tags: ['test'],
+        method: 'get',
+        path: '/users/{id}',
+        security: [
+          {
+            Bearer: security,
+          },
+        ],
+        responses: {
+          200: {
+            description: 'User',
+          },
+        },
+      }),
+      async (ctx) => {
+        return ctx.text('User found');
+      },
+    )
+    // Test route with optional param (if supported by framework)
+    .openapi(
+      createRoute({
+        tags: ['test'],
+        method: 'get',
+        path: '/posts/{id}',
+        security: [
+          {
+            Bearer: security,
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Post',
+          },
+        },
+      }),
+      async (ctx) => {
+        return ctx.text('Post found');
+      },
+    );
+
+  return testClient(app, {
+    JWKS_URL: 'https://example.com',
+    JWKS_SERVICE: {
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            keys: [
+              {
+                kid: 'ktyVcDrfCNrR1Iq3fBpob',
+                alg: 'RS256',
+                e: 'AQAB',
+                kty: 'RSA',
+                n: 'zDsobBekECj41TbpxwLjsEXkCu0BqfAWT15hYhIW4gWsXtb7TqfQLU8MJmaZR_GX4xQ1X5cgcWUh7ZMYDtnU6QSzGz5mRLfq1u0oIq9thdNViuxUHGpdaQRMAYIPwVwtFb1QWQdYq0QYF-M9t20N7dDOxYfGTs03i8dtKvvd2mDHVXtDXfOwdpsRqDzu03OdFMnWQl3nuePz7U44f9owpmZlZcZv03nPCyuHOpCGcNwexeLCcc97eRbgRaZa1_NJ6lzo1WsDx_tyR7cu4LZZpgs0z-KXUaU4sYqiVsz7UM96wNOmRDmFAUIo3m44d5hFWizIaBJ1b6QfT9Xu2GV8eaE8wlSnGMCl_F0GHblpTH9bcfhWfazDscqk3qWj6CMb49L70As96P29_qocs8tBQWlDe9qVh5Bb69wChj62EzDjVY-YMAJnaO3zyVSbRO5Qg6XPj8UYniPcaDpO7l84NNbQzfAk6ZOAwplcMTTvWiQe7EUMUuk0aGQH7uKXO-P2z4k86dnHFS_wjFogizcsbhDSPRRoC-IW__EQewgw0ICO3Vpe5JJ-EgluKPxHzY-ldHWZilOyF_wr9mUXvOhhGtKQsQcXd8FWo92nwM6IqhesljaQA97KlZ_VKE_WODZ94mgb6dD-v06yiWfZeOtBury0veDF30zwILJDTGfTq6k',
+                use: 'sig',
+              },
+            ],
+          }),
+          {
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+    },
+  });
+}
+
 describe('authentication', () => {
   it('A request without a bearer should return a 403', async () => {
     const appClient = getTestApp();
@@ -229,5 +305,72 @@ describe('authentication', () => {
     expect(consoleInfoSpy).not.toHaveBeenCalled();
 
     consoleInfoSpy.mockRestore();
+  });
+
+  describe('Route parameter handling', () => {
+    it('Should require authentication for routes with path parameters', async () => {
+      const appClient = getTestAppWithParams([]);
+
+      const response = await appClient.users[':id'].$get({
+        param: { id: '123' },
+      });
+
+      expect(response.status).toBe(403);
+      expect(await response.text()).toBe('Missing bearer token');
+    });
+
+    it('Should authenticate routes with path parameters when valid token provided', async () => {
+      const appClient = getTestAppWithParams([]);
+
+      const response = await appClient.users[':id'].$get(
+        {
+          param: { id: '123' },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe('User found');
+    });
+
+    it('Should enforce permissions on routes with path parameters', async () => {
+      const appClient = getTestAppWithParams(['admin:users']);
+
+      const response = await appClient.users[':id'].$get(
+        {
+          param: { id: '123' },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      expect(response.status).toBe(403);
+      expect(await response.text()).toBe('Unauthorized');
+    });
+
+    it('Should allow access when user has required permission on parameterized route', async () => {
+      const appClient = getTestAppWithParams(['podcasts:read']);
+
+      const response = await appClient.posts[':id'].$get(
+        {
+          param: { id: '456' },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe('Post found');
+    });
   });
 });
