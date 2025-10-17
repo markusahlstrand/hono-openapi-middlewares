@@ -21,7 +21,12 @@ function getTestApp(security: string[] = [], options?: AuthMiddlewareOptions) {
     Bindings: Bindings;
   }>();
 
-  rootApp.use(createAuthMiddleware(rootApp, options));
+  rootApp.use(
+    createAuthMiddleware(rootApp, {
+      verifyExpiration: false, // Disable expiration check for tests
+      ...options,
+    }),
+  );
 
   const app = rootApp
     // --------------------------------
@@ -96,7 +101,11 @@ function getTestAppWithParams(security: string[] = []) {
     Bindings: Bindings;
   }>();
 
-  rootApp.use(createAuthMiddleware(rootApp));
+  rootApp.use(
+    createAuthMiddleware(rootApp, {
+      verifyExpiration: false, // Disable expiration check for tests
+    }),
+  );
 
   const app = rootApp
     // Test route with simple param

@@ -147,6 +147,11 @@ export interface AuthMiddlewareOptions {
    * Set to "info" to enable detailed logging of authentication events.
    */
   logLevel?: 'info' | 'warn';
+  /**
+   * Whether to verify JWT expiration. Defaults to true.
+   * Set to false to disable expiration checking (not recommended for production).
+   */
+  verifyExpiration?: boolean;
 }
 
 /**
@@ -158,7 +163,7 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
   app: OpenAPIHono<H>,
   options: AuthMiddlewareOptions = {},
 ) {
-  const { logLevel = 'warn' } = options;
+  const { logLevel = 'warn', verifyExpiration = true } = options;
   return async (ctx: Context, next: Next) => {
     let matchedPath = ctx.req.path;
     let basePath = '';
@@ -291,7 +296,7 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
         const payload = await Jwt.verifyWithJwks(bearer, {
           keys: jwksData.keys,
           verification: {
-            exp: false, // Disable expiration check for now (can be configurable)
+            exp: verifyExpiration,
           },
         });
 
