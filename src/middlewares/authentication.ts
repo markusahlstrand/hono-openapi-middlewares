@@ -162,7 +162,7 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
     // Guard against undefined matchedRoutes (some Hono versions may not set it)
     // Prefer the last match (most specific/deepest) over parent routes by reversing
     const normalizedMethod = ctx.req.method.toUpperCase();
-    let matchedRoute: any = undefined;
+    let matchedRoute: { method: string; path: string } | undefined = undefined;
 
     try {
       if (ctx.req.matchedRoutes && Array.isArray(ctx.req.matchedRoutes)) {
@@ -245,7 +245,7 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
         let rawData: unknown;
         try {
           rawData = await jwksResponse.json();
-        } catch (parseError) {
+        } catch {
           // Failed to parse JWKS response as JSON
           throw new HTTPException(502, {
             message: 'Failed to parse JWKS response',
