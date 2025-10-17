@@ -68,4 +68,17 @@ describe('getAbsoluteDefinitionPath', () => {
     expect(getAbsoluteDefinitionPath('/v1///', '///users')).toBe('/v1/users');
     expect(getAbsoluteDefinitionPath('//api//', '/posts')).toBe('/api/posts');
   });
+
+  it('Should avoid false positives with similar prefix paths', () => {
+    // /v10/users should NOT match basePath /v1 (segment boundary check)
+    expect(getAbsoluteDefinitionPath('/v1', '/v10/users')).toBe(
+      '/v1/v10/users',
+    );
+    expect(getAbsoluteDefinitionPath('/api', '/api2/posts')).toBe(
+      '/api/api2/posts',
+    );
+    expect(getAbsoluteDefinitionPath('/v1', '/v1a/resource')).toBe(
+      '/v1/v1a/resource',
+    );
+  });
 });

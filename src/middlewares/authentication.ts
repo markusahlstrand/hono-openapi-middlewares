@@ -1,6 +1,7 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { Context, Next } from 'hono';
 import { HTTPException } from 'hono/http-exception';
+import { matchedRoutes } from 'hono/route';
 import { Jwt } from 'hono/utils/jwt';
 import type { JWTPayload } from 'hono/utils/jwt/types';
 import { z } from 'zod';
@@ -115,7 +116,11 @@ export function getAbsoluteDefinitionPath(
   definitionPath: string,
 ) {
   // Only skip normalization if basePath is not empty and definitionPath already starts with it
-  if (basePath && definitionPath.startsWith(basePath)) {
+  // Use segment-boundary check to avoid false positives (e.g., /v1 matching /v10)
+  if (
+    basePath &&
+    (definitionPath === basePath || definitionPath.startsWith(`${basePath}/`))
+  ) {
     return definitionPath;
   }
 
@@ -158,24 +163,31 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
     let matchedPath = ctx.req.path;
     let basePath = '';
 
-    // Try to use matchedRoutes for better route matching
-    // Guard against undefined matchedRoutes (some Hono versions may not set it)
+    // Use the matchedRoutes helper from hono/route for better route matching
     // Prefer the last match (most specific/deepest) over parent routes by reversing
     const normalizedMethod = ctx.req.method.toUpperCase();
-    let matchedRoute: { method: string; path: string } | undefined = undefined;
+    
+    interface MatchedRoute {
+      method: string;
+      path: string;
+      basePath?: string;
+    }
+    
+    let matchedRoute: MatchedRoute | undefined = undefined;
 
     try {
-      if (ctx.req.matchedRoutes && Array.isArray(ctx.req.matchedRoutes)) {
+      const routes = matchedRoutes(ctx);
+      if (routes && Array.isArray(routes) && routes.length > 0) {
         // Reverse to prefer the most specific (deepest) match
-        const routes = [...ctx.req.matchedRoutes].reverse();
-        matchedRoute = routes.find(
+        const reversedRoutes = [...routes].reverse();
+        matchedRoute = reversedRoutes.find(
           (route) =>
             route.method.toUpperCase() === normalizedMethod &&
             route.path !== '/*',
-        );
+        ) as MatchedRoute | undefined;
       }
     } catch {
-      // Silently fail if matchedRoutes is not accessible
+      // Silently fail if matchedRoutes helper fails
       matchedRoute = undefined;
     }
 
@@ -183,10 +195,7 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
       // Convert Hono route syntax to OpenAPI syntax
       matchedPath = convertRouteSyntax(matchedRoute.path);
 
-      basePath =
-        'basePath' in matchedRoute && typeof matchedRoute.basePath === 'string'
-          ? matchedRoute.basePath
-          : '';
+      basePath = matchedRoute.basePath || '';
     }
 
     // Normalize both paths for consistent comparison
