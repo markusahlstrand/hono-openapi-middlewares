@@ -1,7 +1,10 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { testClient } from 'hono/testing';
-import { createAuthMiddleware } from '../src/middlewares/authentication';
+import {
+  createAuthMiddleware,
+  type AuthMiddlewareOptions,
+} from '../src/middlewares/authentication';
 
 interface Bindings {
   JWKS_URL: string;
@@ -13,12 +16,12 @@ interface Bindings {
 const token =
   'eyJraWQiOiJrdHlWY0RyZkNOclIxSXEzZkJwb2IiLCJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkZWZhdWx0Iiwic2NvcGUiOiJvcGVuaWQgZW1haWwgcHJvZmlsZSIsInBlcm1pc3Npb25zIjpbInBvZGNhc3RzOnJlYWQiLCJwb2RjYXN0czp3cml0ZSJdLCJzdWIiOiJhdXRoMHw2MzViZGZkZjFmYWRhNzk1ZTgyYmQwNWQiLCJraWQiOiJrdHlWY0RyZkNOclIxSXEzZkJwb2IiLCJpc3MiOiJodHRwczovL3Rva2VuLnNlc2FteS5kZXYvIiwiYXpwIjoia3ZhcnRhbCIsInZlbmRvcl9pZCI6Imt2YXJ0YWwiLCJpYXQiOjE3MzE1NzIyMjAsImV4cCI6MTczMTY1ODYyMH0.eeKG25sZiOpgHv8EZEawnJVt9NNYJrbqJJqgnUErsDU0H-XGOkaxTGG_cfTU3toFFhtVPmm9unFywh9PuQ-l6ewrZCSOhGwLCalbKo_nUVgUo93PXm98APr8U-YEfl2YsIpb-hLrnYpgK6R9yTVeJKqEAlFzTeFf1Ucl5BvGrluZgEy8EAW1ct-1rfHw7BXFVfFn7oga9o8h-vCY5EPDVHAo9jrTUhZp3DTtYSun1v6kaoqOp5yvr5OWkFkZI9Wv5Ogc7KwrUd7ULExV_fVpcIq078O_u2seNriYVgp3xBcsMvYJsbmWzv8OCsLZcXG18n0E7SUYvh95PR9cXzNgKGSPJVdtrOjMmi11WeYin_qpdIwa63GmhO8z9NbM9TD99WnLAMwcaSTSMvpiVw0ctgU7mGYPnEcrflRT_t169yGg_Ms6kkxptMzGpJI7sskxj6-izL9GYbyNYypOonLdAQGsCjLZzZ5tlNr7o1ucKpBR9zwfZOcBEfeqeahc3rH2y5JlcUE7Ic06ui4hfXk9CLnL-mdm4IALcUJk2XUqAGmTtt-Vf_0SeQFj6cS7kUvprYvXK3hv4WapeN1N1zqsi7cy0GxvwgH5FC_-eTQTTbvL7fnz4nAVDt0t_273N7hrQsh9go3w91mjvBUWt65eztU44C0ctwlBslAtxN0HrUs';
 
-function getTestApp(security: string[] = []) {
+function getTestApp(security: string[] = [], options?: AuthMiddlewareOptions) {
   const rootApp = new OpenAPIHono<{
     Bindings: Bindings;
   }>();
 
-  rootApp.use(createAuthMiddleware(rootApp));
+  rootApp.use(createAuthMiddleware(rootApp, options));
 
   const app = rootApp
     // --------------------------------
@@ -169,5 +172,62 @@ describe('authentication', () => {
 
     expect(response.status).toBe(403);
     expect(await response.text()).toBe('Unauthorized');
+  });
+
+  it('Should log authentication events when logLevel is set to info', async () => {
+    const consoleInfoSpy = vi
+      .spyOn(console, 'info')
+      .mockImplementation(() => {});
+
+    const appClient = getTestApp(['podcasts:read'], { logLevel: 'info' });
+
+    await appClient.authenticated.$get(
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      'Authentication middleware triggered',
+      expect.objectContaining({
+        route: expect.stringContaining('GET'),
+        requiredPermissions: ['podcasts:read'],
+      }),
+    );
+
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      'User authenticated',
+      expect.objectContaining({
+        user: expect.objectContaining({
+          sub: 'auth0|635bdfdf1fada795e82bd05d',
+        }),
+      }),
+    );
+
+    consoleInfoSpy.mockRestore();
+  });
+
+  it('Should not log when logLevel is warn (default)', async () => {
+    const consoleInfoSpy = vi
+      .spyOn(console, 'info')
+      .mockImplementation(() => {});
+
+    const appClient = getTestApp(['podcasts:read']); // No logLevel specified
+
+    await appClient.authenticated.$get(
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    expect(consoleInfoSpy).not.toHaveBeenCalled();
+
+    consoleInfoSpy.mockRestore();
   });
 });

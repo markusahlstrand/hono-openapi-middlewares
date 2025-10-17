@@ -44,14 +44,65 @@ const app = new OpenAPIHono<{
 
 // Apply authentication middleware globally
 app.use(createAuthMiddleware(app));
+
+// Or with debug logging enabled
+app.use(
+  createAuthMiddleware(app, {
+    logLevel: 'info', // Enable detailed authentication logging
+  }),
+);
+```
+
+### Configuration Options
+
+The `createAuthMiddleware` function accepts an optional configuration object:
+
+```typescript
+interface AuthMiddlewareOptions {
+  /**
+   * Log level for the middleware. Defaults to "warn".
+   * Set to "info" to enable detailed logging of authentication events.
+   */
+  logLevel?: 'info' | 'warn';
+}
+```
+
+**Debug Logging:**
+
+When `logLevel` is set to `'info'`, the middleware will log:
+
+- When authentication middleware is triggered for a route
+- The route being accessed and required permissions
+- Successful user authentication with JWT payload details
+
+This is useful for debugging authentication issues in development:
+
+```typescript
+app.use(
+  createAuthMiddleware(app, {
+    logLevel: process.env.NODE_ENV === 'development' ? 'info' : 'warn',
+  }),
+);
+
+// Console output when enabled:
+// Authentication middleware triggered { route: 'GET /authenticated', requiredPermissions: ['posts:read'] }
+// User authenticated { user: { sub: 'user123', permissions: [...], ... } }
 ```
 
 ### How Authentication Works
 
 1. **Route-level security**: Define security requirements in your OpenAPI route definitions
-2. **JWT validation**: The middleware validates JWT tokens against your JWKS endpoint
-3. **Permission enforcement**: Checks if the token contains required permissions
-4. **Context population**: Stores the full JWT payload as `user` and user ID as `user_id` in the context
+2. **Improved route matching**: The middleware properly matches routes with path parameters (e.g., `/users/:id`) and handles base paths correctly
+3. **JWT validation**: The middleware validates JWT tokens against your JWKS endpoint
+4. **Permission enforcement**: Checks if the token contains required permissions
+5. **Context population**: Stores the full JWT payload as `user` and user ID as `user_id` in the context
+
+**Route Matching Features:**
+
+- Converts Hono route syntax (`:param`) to OpenAPI syntax (`{param}`) for accurate matching
+- Handles routes with base paths correctly by combining them with definition paths
+- Skips wildcard routes (`/*`) to avoid incorrect matches
+- Matches both route path and HTTP method for precise route identification
 
 ### Defining Protected Routes
 
@@ -93,7 +144,7 @@ To require specific permissions, list them in the Bearer array:
 app.openapi(
   createRoute({
     method: 'post',
-    path: '/posts',
+    path: '/posts',C
     security: [
       {
         Bearer: ['posts:write', 'content:create'], // Requires at least one of these permissions
