@@ -1,3 +1,10 @@
+## [1.1.6](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.1.5...v1.1.6) (2026-01-28)
+
+
+### Bug Fixes
+
+* fetch as detatched method ([ec98c7d](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/ec98c7d12b995873a2b26b0961fc62e815f0b00f))
+
 ## [1.1.5](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.1.4...v1.1.5) (2025-10-17)
 
 
