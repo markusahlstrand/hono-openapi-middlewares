@@ -246,8 +246,9 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
 
       try {
         // Fetch JWKS keys
-        const fetcher = ctx.env.JWKS_SERVICE?.fetch || fetch;
-        const jwksResponse = await fetcher(ctx.env.JWKS_URL);
+        const jwksResponse = ctx.env.JWKS_SERVICE
+          ? await ctx.env.JWKS_SERVICE.fetch(ctx.env.JWKS_URL)
+          : await fetch(ctx.env.JWKS_URL);
 
         if (!jwksResponse.ok) {
           // JWKS endpoint returned an error status
