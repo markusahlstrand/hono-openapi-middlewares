@@ -1,10 +1,9 @@
-import { OpenAPIHono } from '@hono/zod-openapi';
+import { OpenAPIHono, z } from '@hono/zod-openapi';
 import { Context, Next } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { matchedRoutes } from 'hono/route';
 import { Jwt } from 'hono/utils/jwt';
 import type { JWTPayload } from 'hono/utils/jwt/types';
-import { z } from 'zod';
 
 export interface Fetcher {
   fetch: typeof fetch;
