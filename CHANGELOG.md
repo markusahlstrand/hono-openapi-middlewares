@@ -1,3 +1,14 @@
+## [1.1.7](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.1.6...v1.1.7) (2026-04-27)
+
+
+### Bug Fixes
+
+* npm deployments ([fc67f40](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/fc67f40a5f32dd904c323e9a2a0b4c3edf654722))
+* provenance ([24ccb05](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/24ccb05179aa872d8dff4f646b5cfc5e63500aed))
+* remove zod dependency ([c80807f](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/c80807fcad98bd57f382d14905b788d7d4eb4523))
+* type check ([e113681](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/e113681776730094b88414f84a540682a1a7ab16))
+* update semantic release ([a5a7ecb](https://github.com/markusahlstrand/hono-openapi-middlewares/commit/a5a7ecbf0ea5ae0eaa04901ff9c994845d6ae3fb))
+
 ## [1.1.6](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.1.5...v1.1.6) (2026-01-28)
 
 
