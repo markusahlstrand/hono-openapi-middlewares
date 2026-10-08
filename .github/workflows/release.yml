@@ -45,8 +45,12 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      # semantic-release runs the build in its prepare step after calculating
-      # the release version, so the published package gets the correct version.
+      # The npm plugin checks pkgRoot during verifyConditions, before prepare.
+      - name: Build package for release verification
+        run: yarn build
+
+      # The prepare step rebuilds the package, then the npm plugin writes the
+      # calculated release version to build/package.json before publishing.
       - name: Release
         run: yarn semantic-release
         env:
