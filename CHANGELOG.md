@@ -1,3 +1,19 @@
+# [2.0.0](https://github.com/markusahlstrand/hono-[secure]-[secure]s/compare/v1.1.7...v2.0.0) (2026-10-08)
+
+
+* feat!: support Zod 4 and Zod OpenAPI 1 ([1240467](https://github.com/markusahlstrand/hono-[secure]-[secure]s/commit/12404678b61acf9ca5532399d99dc902116119c3))
+
+
+### Bug Fixes
+
+* build package before release verification ([9919d1e](https://github.com/markusahlstrand/hono-[secure]-[secure]s/commit/9919d1eb0bc77928b2ae605df3d336470f31ba58))
+* **ci:** disable persisted release checkout credentials ([234b625](https://github.com/markusahlstrand/hono-[secure]-[secure]s/commit/234b625e20dd35b4b36578f60b225d44f84a7423))
+
+
+### BREAKING CHANGES
+
+* requires Zod 4.6.5, @hono/zod-[secure] 1.6.3, and Hono 4.13.13 or compatible newer versions. JWT verification defaults to RS256; configure allowedAlgorithms for other asymmetric algorithms.
+
 ## [1.1.7](https://github.com/markusahlstrand/hono-openapi-middlewares/compare/v1.1.6...v1.1.7) (2026-04-27)
 
 
