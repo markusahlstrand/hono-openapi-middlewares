@@ -1,4 +1,5 @@
-import { OpenAPIHono, z } from '@hono/zod-openapi';
+import type { OpenAPIHono } from '@hono/zod-openapi';
+import { z } from 'zod';
 import { Context, Next } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { matchedRoutes } from 'hono/route';
@@ -141,6 +142,10 @@ export function getAbsoluteDefinitionPath(
 }
 
 export interface AuthMiddlewareOptions {
+  /** Trusted JWT algorithms. Defaults to ['RS256']. */
+  allowedAlgorithms?: NonNullable<
+    Parameters<typeof Jwt.verifyWithJwks>[1]['allowedAlgorithms']
+  >;
   /**
    * Log level for the middleware. Defaults to "warn".
    * Set to "info" to enable detailed logging of authentication events.
@@ -162,7 +167,11 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
   app: OpenAPIHono<H>,
   options: AuthMiddlewareOptions = {},
 ) {
-  const { logLevel = 'warn', verifyExpiration = true } = options;
+  const {
+    logLevel = 'warn',
+    verifyExpiration = true,
+    allowedAlgorithms = ['RS256'],
+  } = options;
   return async (ctx: Context, next: Next) => {
     let matchedPath = ctx.req.path;
     let basePath = '';
@@ -295,6 +304,7 @@ export function createAuthMiddleware<H extends AuthenticationGenerics>(
         // Use Hono's JWT utility to verify the token with the fetched JWKS keys
         const payload = await Jwt.verifyWithJwks(bearer, {
           keys: jwksData.keys,
+          allowedAlgorithms,
           verification: {
             exp: verifyExpiration,
           },

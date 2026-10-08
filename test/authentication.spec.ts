@@ -243,6 +243,36 @@ describe('authentication', () => {
     expect(await response.text()).toBe('Hello World');
   });
 
+  it.each<{ allowedAlgorithms: AuthMiddlewareOptions['allowedAlgorithms'] }>([
+    { allowedAlgorithms: ['ES256'] },
+    { allowedAlgorithms: [] },
+  ])(
+    'rejects an RS256 token when the allowlist is $allowedAlgorithms',
+    async ({ allowedAlgorithms }) => {
+      const appClient = getTestApp([], {
+        allowedAlgorithms,
+      });
+      const response = await appClient.authenticated.$get(
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      expect(response.status).toBe(403);
+      expect(await response.text()).toBe('Invalid JWT signature');
+    },
+  );
+
+  it('rejects a token with a tampered signature', async () => {
+    const appClient = getTestApp();
+    const parts = token.split('.');
+    parts[2] = `${parts[2][0] === 'A' ? 'B' : 'A'}${parts[2].slice(1)}`;
+    const response = await appClient.authenticated.$get(
+      {},
+      { headers: { Authorization: `Bearer ${parts.join('.')}` } },
+    );
+    expect(response.status).toBe(403);
+    expect(await response.text()).toBe('Invalid JWT signature');
+  });
+
   it('A request with a valid token and non-matching permission should return a 403', async () => {
     const appClient = getTestApp(['some:other:scope']);
 

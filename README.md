@@ -1,492 +1,247 @@
 # hono-openapi-middlewares
 
-A set of middlewares for using hono with zod-openapi:
-
-- authentication and authorization. Validates the claims in the security scheme in the openapi spec.
-- register components. Adds the security shemes to the openapi spec.
-- swagger-ui (not yet implemented). Serves the swagger-ui for the openapi spec.
+JWT authentication and permission checks driven by your `@hono/zod-openapi` route definitions. The library verifies tokens against a JSON Web Key Set (JWKS), exposes the authenticated user in Hono's context, and includes a helper for registering an OpenAPI security scheme.
 
 ## Installation
 
-```bash
-npm install hono-openapi-middlewares
+Install the library and its peer dependencies together:
+
+```sh
+npm install hono-openapi-middlewares @hono/zod-openapi@^1.6.3 hono@^4.13.13 zod@^4.6.5
 ```
 
-## Peer dependencies
+| Dependency          | Supported version |
+| ------------------- | ----------------- |
+| `@hono/zod-openapi` | `^1.6.3`          |
+| `hono`              | `^4.13.13`        |
+| `zod`               | `^4.6.5`          |
 
-The library has the following peer-dependencies that needs to be available:
+These requirements describe the updated source in this repository. Check the peer dependencies of the published version when installing from npm.
 
-- @hono/zod-openapi
-- hono
+## Quick start
 
-## Authentication middleware
-
-The authentication middleware validates JWT tokens using JWKS (JSON Web Key Set) and enforces permissions defined in your OpenAPI routes. It uses Hono's built-in JWT utilities for secure token verification.
-
-### Basic Setup
+This example uses Cloudflare Workers bindings. Other runtimes can provide the same bindings through Hono's request environment.
 
 ```typescript
-import { createAuthMiddleware } from 'hono-openapi-middlewares';
-import { OpenAPIHono } from '@hono/zod-openapi';
-
-interface Bindings {
-  JWKS_URL: string;
-  JWKS_SERVICE?: {
-    // Optional: Makes it possible to call other Cloudflare workers using a service reference
-    fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
-  };
-}
+import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
+import {
+  createAuthMiddleware,
+  type AuthBindings,
+  type AuthVariables,
+} from 'hono-openapi-middlewares';
 
 const app = new OpenAPIHono<{
-  Bindings: Bindings;
-  Variables: Variables;
+  Bindings: AuthBindings;
+  Variables: AuthVariables;
 }>();
 
-// Apply authentication middleware globally
+// Register middleware before route handlers, using the same app instance.
 app.use(createAuthMiddleware(app));
 
-// Or with debug logging enabled
-app.use(
-  createAuthMiddleware(app, {
-    logLevel: 'info', // Enable detailed authentication logging
-  }),
-);
-```
-
-### Configuration Options
-
-The `createAuthMiddleware` function accepts an optional configuration object:
-
-```typescript
-interface AuthMiddlewareOptions {
-  /**
-   * Log level for the middleware. Defaults to "warn".
-   * Set to "info" to enable detailed logging of authentication events.
-   */
-  logLevel?: 'info' | 'warn';
-}
-```
-
-**Debug Logging:**
-
-When `logLevel` is set to `'info'`, the middleware will log:
-
-- When authentication middleware is triggered for a route
-- The route being accessed and required permissions
-- Successful user authentication with JWT payload details
-
-This is useful for debugging authentication issues in development:
-
-```typescript
-app.use(
-  createAuthMiddleware(app, {
-    logLevel: process.env.NODE_ENV === 'development' ? 'info' : 'warn',
-  }),
-);
-
-// Console output when enabled:
-// Authentication middleware triggered { route: 'GET /authenticated', requiredPermissions: ['posts:read'] }
-// User authenticated { user: { sub: 'user123', permissions: [...], ... } }
-```
-
-### How Authentication Works
-
-1. **Route-level security**: Define security requirements in your OpenAPI route definitions
-2. **Improved route matching**: The middleware properly matches routes with path parameters (e.g., `/users/:id`) and handles base paths correctly
-3. **JWT validation**: The middleware validates JWT tokens against your JWKS endpoint
-4. **Permission enforcement**: Checks if the token contains required permissions
-5. **Context population**: Stores the full JWT payload as `user` and user ID as `user_id` in the context
-
-**Route Matching Features:**
-
-- Converts Hono route syntax (`:param`) to OpenAPI syntax (`{param}`) for accurate matching
-- Handles routes with base paths correctly by combining them with definition paths
-- Skips wildcard routes (`/*`) to avoid incorrect matches
-- Matches both route path and HTTP method for precise route identification
-
-### Defining Protected Routes
-
-#### Basic Authentication (No Permissions)
-
-To require authentication without specific permissions, add an empty Bearer array:
-
-```typescript
-import { createRoute } from '@hono/zod-openapi';
-
-app.openapi(
-  createRoute({
-    method: 'get',
-    path: '/protected',
-    security: [
-      {
-        Bearer: [], // Requires valid JWT, no specific permissions
-      },
-    ],
-    responses: {
-      200: {
-        description: 'Success',
-      },
-    },
-  }),
-  async (ctx) => {
-    const user = ctx.get('user'); // Full JWT payload
-    const userId = ctx.get('user_id'); // Shortcut to user.sub
-    return ctx.json({ userId, email: user.email });
-  },
-);
-```
-
-#### Permission-Based Authorization
-
-To require specific permissions, list them in the Bearer array:
-
-```typescript
-app.openapi(
-  createRoute({
-    method: 'post',
-    path: '/posts',
-    security: [
-      {
-        Bearer: ['posts:write', 'content:create'], // Requires at least one of these permissions
-      },
-    ],
-    responses: {
-      201: {
-        description: 'Post created',
-      },
-    },
-  }),
-  async (ctx) => {
-    // User has at least one of: posts:write OR content:create
-    return ctx.json({ message: 'Post created' });
-  },
-);
-```
-
-#### Public Routes
-
-Routes without a `security` property are public and don't require authentication:
-
-```typescript
-app.openapi(
-  createRoute({
-    method: 'get',
-    path: '/public',
-    // No security property - public route
-    responses: {
-      200: {
-        description: 'Public data',
-      },
-    },
-  }),
-  async (ctx) => {
-    return ctx.json({ message: 'Public route' });
-  },
-);
-```
-
-### Understanding Scopes vs Permissions
-
-The middleware uses the `permissions` claim from your JWT token. This is compatible with various authentication providers:
-
-- **Auth0**: Uses `permissions` array in the token
-- **OAuth2 scopes**: Can be mapped to permissions
-- **Custom auth**: Include `permissions` array in your JWT payload
-
-**JWT Token Example:**
-
-```json
-{
-  "sub": "user123",
-  "permissions": ["posts:read", "posts:write", "admin:users"],
-  "iat": 1234567890,
-  "exp": 1234567890
-}
-```
-
-### Permission Matching Logic
-
-The middleware uses **OR logic** for permissions:
-
-- If a route requires `['posts:write', 'posts:delete']`
-- The user needs at least **one** of these permissions to access the route
-- Having `posts:write` is sufficient, even without `posts:delete`
-
-**Example:**
-
-```typescript
-// Route requires one of these permissions
-security: [{ Bearer: ['posts:write', 'posts:delete'] }];
-
-// Token has: ["posts:write", "comments:moderate"]
-// Result: ✅ Access granted (has posts:write)
-
-// Token has: ["posts:read", "comments:moderate"]
-// Result: ❌ 403 Unauthorized (missing required permissions)
-
-// Token has: ["posts:write", "posts:delete"]
-// Result: ✅ Access granted (has both)
-```
-
-### OpenAPI Specification Generation
-
-The security requirements are automatically included in your OpenAPI specification:
-
-```yaml
-paths:
-  /posts:
-    post:
-      security:
-        - Bearer:
-            - posts:write
-            - content:create
-      responses:
-        '201':
-          description: Post created
-        '403':
-          description: Unauthorized - Missing required permissions
-```
-
-### Error Responses
-
-The middleware returns these HTTP exceptions:
-
-| Status | Message                         | Type   | Cause                                     |
-| ------ | ------------------------------- | ------ | ----------------------------------------- |
-| 403    | Missing bearer token            | Client | No Authorization header or invalid format |
-| 403    | Invalid JWT signature           | Client | Token validation failed or expired        |
-| 403    | Unauthorized                    | Client | User lacks required permissions           |
-| 502    | JWKS endpoint returned {status} | Server | JWKS endpoint returned non-200 status     |
-| 502    | Failed to parse JWKS response   | Server | JWKS response is not valid JSON           |
-| 502    | Invalid JWKS format             | Server | JWKS response missing `keys` array        |
-| 503    | JWKS service unavailable        | Server | Network error or JWKS fetch failure       |
-
-**Error Type Distinction:**
-
-- **4xx (Client Errors)**: Issues with the client's request or token - clients should fix their request
-- **5xx (Server Errors)**: Issues with JWKS infrastructure - operations team should investigate
-
-This distinction helps with:
-
-- **Monitoring**: Alert ops teams on 5xx errors (infrastructure issues)
-- **Client UX**: Provide appropriate error messages based on error type
-- **Debugging**: Quickly identify whether the issue is with the client or server
-
-### Advanced Configuration
-
-#### Custom JWKS Fetcher (Cloudflare Workers)
-
-For Cloudflare Workers with service bindings:
-
-```typescript
-interface Bindings {
-  JWKS_URL: string;
-  JWKS_SERVICE: {
-    fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
-  };
-}
-
-// The middleware will use JWKS_SERVICE.fetch if available
-// Falls back to global fetch if not provided
-```
-
-#### Accessing User Information
-
-After successful authentication, the entire JWT payload is available in the context:
-
-```typescript
-app.openapi(route, async (ctx) => {
-  // Access the full JWT payload
-  const user = ctx.get('user');
-
-  // Available properties (depending on your JWT):
-  const userId = user.sub; // Subject (user ID)
-  const email = user.email; // Email (if included)
-  const permissions = user.permissions; // Permissions array
-  const issuer = user.iss; // Token issuer
-  const audience = user.aud; // Token audience
-
-  // Or use the shortcut for user ID
-  const userId = ctx.get('user_id'); // Same as user.sub
-
-  // Use for database queries, logging, etc.
-  const userProfile = await db.users.findById(userId);
-
-  return ctx.json({
-    userId,
-    email,
-    permissions,
-    profile: userProfile,
-  });
+// Register a security scheme for the generated documentation.
+app.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT',
 });
-```
 
-**TypeScript Support:**
-
-To get proper TypeScript types, extend your app's Variables:
-
-````typescript
-import type { JWTPayload } from 'hono/utils/jwt/types';
-import { OpenAPIHono } from '@hono/zod-openapi';
-
-const app = new OpenAPIHono<{
-  Bindings: {
-    JWKS_URL: string;
-  };
-  Variables: {
-    user: JWTPayload;
-    user_id: string;
-  };
-}>();
-
-// Now you get full type safety
-app.openapi(route, async (ctx) => {
-  const user = ctx.get('user'); // Typed as JWTPayload
-  const userId = ctx.get('user_id'); // Typed as string
-});
-```### Complete Example
-
-```typescript
-import { createAuthMiddleware } from 'hono-openapi-middlewares';
-import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
-
-const app = new OpenAPIHono<{
-  Bindings: {
-    JWKS_URL: string;
-  };
-}>();
-
-// Apply authentication middleware
-app.use(createAuthMiddleware(app));
-
-// Public route - no authentication required
 app.openapi(
   createRoute({
     method: 'get',
-    path: '/public',
+    path: '/health',
     responses: {
-      200: { description: 'Public endpoint' },
+      200: { description: 'Service is running' },
     },
   }),
-  async (ctx) => ctx.json({ message: 'Public' }),
+  (c) => c.text('OK'),
 );
 
-// Protected route - requires valid JWT
 app.openapi(
   createRoute({
     method: 'get',
     path: '/profile',
     security: [{ Bearer: [] }],
     responses: {
-      200: { description: 'User profile' },
+      200: { description: 'Authenticated user' },
+      403: { description: 'Missing or invalid token' },
     },
   }),
-  async (ctx) => {
-    const user = ctx.get('user');
-    return ctx.json({
-      userId: user.sub,
-      email: user.email,
-      permissions: user.permissions
-    });
-  },
+  (c) => c.json({ userId: c.get('user_id') }),
 );
 
-// Permission-protected route - requires specific permissions
 app.openapi(
   createRoute({
     method: 'post',
-    path: '/admin/users',
-    security: [{ Bearer: ['admin:users', 'admin:all'] }],
+    path: '/posts',
+    security: [{ Bearer: ['posts:write', 'content:create'] }],
+    request: {
+      body: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: z.object({ title: z.string().min(1) }),
+          },
+        },
+      },
+    },
     responses: {
-      201: { description: 'User created' },
+      201: { description: 'Post created' },
+      403: { description: 'Missing token or permission' },
     },
   }),
-  async (ctx) => {
-    const user = ctx.get('user');
-    // User has admin:users OR admin:all permission
-    // Access full user context for audit logging
-    console.log(`User ${user.sub} created a new user`);
-    return ctx.json({ message: 'User created' });
-  },
+  (c) => c.json({ title: c.req.valid('json').title }, 201),
 );
 
+app.doc31('/openapi.json', {
+  openapi: '3.1.0',
+  info: { title: 'Posts API', version: '1.0.0' },
+});
+
 export default app;
-````
+```
 
-### Best Practices
+Set `JWKS_URL` to your identity provider's trusted JWKS endpoint. Call protected routes with an `Authorization: Bearer <token>` header. Tokens need a `kid` header that matches a key in the JWKS and a signing algorithm in the configured allowlist.
 
-#### Permission Naming Convention
+Import `z` from `@hono/zod-openapi` when defining schemas that use `.openapi()` metadata.
 
-Use a consistent naming convention for permissions:
+## Route security and permissions
 
-- **Resource:Action** format: `posts:read`, `posts:write`, `users:delete`
-- **Hierarchical**: `admin:all`, `admin:users`, `admin:content`
-- **Descriptive**: Clear action verbs (read, write, create, update, delete)
+| Route definition                                            | Behavior                                                     |
+| ----------------------------------------------------------- | ------------------------------------------------------------ |
+| No `security`, or `security: []`                            | Public; authentication is skipped                            |
+| `security: [{ Bearer: [] }]`                                | Requires a valid JWT                                         |
+| `security: [{ Bearer: ['posts:write', 'content:create'] }]` | Requires a valid JWT with **at least one** listed permission |
 
-#### Security Considerations
+Permission checks read the JWT's `permissions` claim as an array of strings:
 
-1. **Always use HTTPS** in production to protect JWT tokens in transit
-2. **Validate JWKS_URL** comes from a trusted source
-3. **Set appropriate token expiration** times in your auth provider
-4. **Rotate signing keys** regularly at your JWKS endpoint
-5. **Use specific permissions** rather than broad wildcards when possible
+```json
+{
+  "sub": "user123",
+  "permissions": ["posts:read", "posts:write"]
+}
+```
 
-#### Testing
+This payload illustrates the claims used by the middleware; your provider should also issue appropriate time claims. Permissions use exact string matching. A permission such as `admin:all` has no special wildcard behavior. The OAuth `scope` claim is not read automatically.
 
-When writing tests, mock the JWKS_SERVICE to avoid external dependencies:
+The middleware matches the request method and route path against the supplied app's OpenAPI registry, including parameterized paths and base paths. If it finds no matching definition, it continues without authenticating.
+
+Only `security[0].Bearer` is evaluated. Additional security entries, other scheme names, and document-level security are not enforced. Define `Bearer` on every route that this middleware should protect, and test protected routes when composing or mounting apps.
+
+## Authentication options
 
 ```typescript
-const mockApp = testClient(app, {
-  JWKS_URL: 'https://example.com/.well-known/jwks.json',
+app.use(
+  createAuthMiddleware(app, {
+    allowedAlgorithms: ['RS256'],
+    verifyExpiration: true,
+    logLevel: 'warn',
+  }),
+);
+```
+
+| Option              | Default     | Behavior                                                                                                      |
+| ------------------- | ----------- | ------------------------------------------------------------------------------------------------------------- |
+| `allowedAlgorithms` | `['RS256']` | Trusted asymmetric JWT signing algorithms                                                                     |
+| `verifyExpiration`  | `true`      | Enables Hono's expiration check when an `exp` claim is present                                                |
+| `logLevel`          | `'warn'`    | `'info'` logs matched security requirements and authenticated JWT payloads; `'warn'` disables those info logs |
+
+Supported algorithms are `RS256`, `RS384`, `RS512`, `PS256`, `PS384`, `PS512`, `ES256`, `ES384`, `ES512`, and `EdDSA`. Set the allowlist to the algorithms used by your provider, for example `allowedAlgorithms: ['ES256']`. An empty list rejects every token. Symmetric algorithms such as `HS256` are not supported by Hono's JWKS verifier.
+
+Keep expiration verification enabled in production. The middleware does not require an `exp` claim or configure issuer (`iss`) or audience (`aud`) validation. Add those checks if your application requires them. Info logging includes the full verified payload, which may contain personal information.
+
+### User context
+
+Use the exported `AuthVariables` type in your app's `Variables`, as shown in the quick start. After successful authentication:
+
+- `c.get('user')` contains the verified JWT payload, typed as Hono's `JWTPayload`.
+- `c.get('user_id')` contains the payload's `sub` claim.
+
+These values are populated only for authenticated requests. The middleware does not require `sub`, so ensure your provider supplies it if your handlers rely on `user_id`. Custom claims such as `email` and `permissions` need narrowing before use.
+
+### Custom JWKS fetching
+
+`AuthBindings` requires `JWKS_URL` and accepts an optional `JWKS_SERVICE` with a `fetch: typeof fetch` method. When supplied, the middleware calls `JWKS_SERVICE.fetch(JWKS_URL)`; otherwise it uses global `fetch`.
+
+This supports service bindings or a custom fetch adapter. Tests can supply an adapter returning a JWKS containing a real test public key:
+
+```typescript
+const env: AuthBindings = {
+  JWKS_URL: 'https://auth.example.com/.well-known/jwks.json',
   JWKS_SERVICE: {
-    fetch: async () =>
-      new Response(
-        JSON.stringify({
-          keys: [
-            {
-              kid: 'key-id-123',
-              alg: 'RS256',
-              kty: 'RSA',
-              use: 'sig',
-              n: 'modulus...',
-              e: 'AQAB',
-            },
-          ],
-        }),
-      ),
+    fetch: async () => Response.json({ keys: [publicJwk] }),
   },
+};
+
+const response = await app.request(
+  '/profile',
+  { headers: { Authorization: `Bearer ${signedTestToken}` } },
+  env,
+);
+```
+
+Here, `publicJwk` and `signedTestToken` must come from the same test key pair. The middleware fetches the JWKS on every authenticated request; it does not cache keys.
+
+### Error responses
+
+The middleware throws Hono `HTTPException` errors. Hono's default error handler returns the message as plain text; an app-level error handler can customize the response.
+
+| Status | Message                           | Cause                                                                   |
+| ------ | --------------------------------- | ----------------------------------------------------------------------- |
+| 403    | `Missing bearer token`            | Missing bearer header or token                                          |
+| 403    | `Invalid JWT signature`           | JWT verification failed, including expiration or a disallowed algorithm |
+| 403    | `Unauthorized`                    | No required permission matched                                          |
+| 502    | `JWKS endpoint returned {status}` | JWKS endpoint returned a non-success status                             |
+| 502    | `Failed to parse JWKS response`   | JWKS response could not be parsed as JSON                               |
+| 502    | `Invalid JWKS format: …`          | JWKS failed schema validation, such as an empty or missing `keys` array |
+| 503    | `JWKS service unavailable`        | JWKS fetch failed                                                       |
+
+Add error responses to your route definitions if you want them included in the generated OpenAPI document. The middleware does not add response definitions automatically.
+
+## Environment-based security scheme registration
+
+For an OAuth2 implicit-flow scheme whose authorization URL comes from the environment, use `registerComponent`:
+
+```typescript
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { registerComponent } from 'hono-openapi-middlewares';
+
+const app = new OpenAPIHono<{
+  Bindings: { AUTH_URL: string };
+}>();
+
+app.use(registerComponent(app));
+app.doc('/openapi.json', {
+  openapi: '3.0.0',
+  info: { title: 'API', version: '1.0.0' },
 });
 ```
 
-## Register components
+On the first request, this helper registers a scheme named `Bearer` with `AUTH_URL` as its implicit-flow authorization URL and `openid`, `email`, and `profile` scopes. It only affects documentation; install `createAuthMiddleware` separately to enforce authentication.
 
-The register components middleware adds security schemes with AUTH_URL based on the environment. As environment variables aren't available until a context is established, the schemes are added on the first request.
+The helper currently tracks initialization at module level, so it registers only once across app instances sharing that module. For multiple apps, or for a plain HTTP bearer scheme, register the scheme directly on each app's `openAPIRegistry`, as in the quick start. Do not register both schemes under the same name.
 
-```typescript
-// Required environment variables:
-interface Bindings {
-  // The url of the auth service that is referenced from the swagger file
-  AUTH_URL: string;
-}
+## Migrating from Zod 3 / Zod OpenAPI 0.x
 
-const app = new OpenAPIHono<{
-  Bindings: Bindings;
-  Variables: Variables;
-}>();
+1. Upgrade `@hono/zod-openapi`, `hono`, and `zod` together to the peer versions above.
+2. Update application schemas for Zod 4. Import OpenAPI-enabled `z` from `@hono/zod-openapi`.
+3. Check your identity provider's signing algorithm. RS256 is the middleware default; configure `allowedAlgorithms` if you use another algorithm.
+4. Verify that a valid token succeeds, a token with an invalid signature fails, and a token without the required permission is rejected.
 
-// Registers security schemes based on AUTH_URL
-app.use(registerComponent(app));
+The new peer requirements replace support for Zod 3 and Zod OpenAPI 0.x. The library passes an explicit algorithm allowlist to Hono's newer JWKS verification API.
 
-// After registration, your OpenAPI spec will include:
-// securitySchemes:
-//   Bearer:
-//     type: oauth2
-//     scheme: bearer
-//     flows:
-//       implicit:
-//         authorizationUrl: <AUTH_URL from environment>
-//         scopes:
-//           openid: Basic user information
-//           email: User email
-//           profile: User profile information
+## Development
+
+```sh
+yarn install --frozen-lockfile
+yarn lint
+yarn format:ci-cd
+yarn type-check
+yarn test
+yarn build
 ```
+
+The build writes ESM, CommonJS, and TypeScript declarations to `build/`.
+
+## License
+
+MIT
